@@ -1,0 +1,962 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{multirow}
+
+\geometry{margin=1in}
+\setstretch{1.2}
+
+\title{Detailed Methodological Guide\\
+Portfolio Optimization with Machine Learning, Market Regimes and Quantitative Methods}
+\author{Jaime\\\small Internal working document (not deliverable)}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+%--------------------------------------------------
+\section{General project objective}
+
+The objective of this project is to design and document a complete quantitative pipeline to:
+
+\begin{itemize}
+    \item Predict monthly returns of a set of S\&P 500 stocks using Machine Learning (ML) and Deep Learning (DL) models.
+    \item Detect market regimes and adapt model selection to each regime.
+    \item Optimize portfolios robustly, incorporating uncertainty through Monte Carlo simulation and transaction costs.
+    \item Evaluate the performance of the resulting portfolios against classical benchmarks.
+\end{itemize}
+
+This document is a closed technical guide: it defines what will be done, how it will be done, with which libraries and with what final design. It is not the thesis dissertation, but rather the methodological foundation upon which it will be built.
+
+%--------------------------------------------------
+\section{Technological environment and libraries}
+
+The project will be implemented in Python. The base environment will be:
+
+\begin{itemize}
+    \item \textbf{Python version:} 3.10+ (ideally 3.10 or 3.11).
+    \item \textbf{Environment manager:} \texttt{conda} or \texttt{venv}.
+\end{itemize}
+
+Main libraries:
+
+\begin{itemize}
+    \item \textbf{Data manipulation:} \texttt{pandas}, \texttt{numpy}.
+    \item \textbf{Data download:} \texttt{yfinance}.
+    \item \textbf{Classical Machine Learning:} \texttt{scikit-learn}.
+    \item \textbf{Gradient boosting:} \texttt{xgboost}.
+    \item \textbf{Deep Learning:} \texttt{pytorch} (and \texttt{torchvision} if necessary).
+    \item \textbf{Portfolio optimization:} \texttt{riskfolio-lib}.
+    \item \textbf{Financial metrics:} \texttt{empyrical}.
+    \item \textbf{Wasserstein distance calculation:} \texttt{scipy.stats}.
+    \item \textbf{Technical indicators (optional):} \texttt{ta} or manual implementation.
+\end{itemize}
+
+The code will be organized into modules (for example, \texttt{data\_processing.py}, \texttt{features.py}, \texttt{models.py}, \texttt{regimes.py}, \texttt{optimization.py}, \texttt{backtest.py}) to maintain clarity and reusability.
+
+%--------------------------------------------------
+\section{Market, asset universe and time horizon}
+
+\subsection{Market and benchmark}
+
+\begin{itemize}
+    \item \textbf{Market:} United States.
+    \item \textbf{Main benchmark:} S\&P 500 (index).
+\end{itemize}
+
+\subsection{Asset universe}
+
+\begin{itemize}
+    \item \textbf{Universe:} 30 large-cap stocks belonging to the S\&P 500.
+    \item \textbf{Selection criteria:}
+    \begin{itemize}
+        \item High liquidity.
+        \item Sector diversity (technology, financial, consumer, healthcare, energy, industrial, etc.).
+        \item Sufficient history in the study period.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Time horizon}
+
+\begin{itemize}
+    \item \textbf{Gross data period:} 2010--2026 (daily).
+    \item \textbf{Effective backtesting period:} 2013--2026.
+\end{itemize}
+
+The first years are used to build sufficient historical windows for features and regimes.
+
+%--------------------------------------------------
+\section{Data: download, cleaning and structure}
+
+\subsection{Data download}
+
+\texttt{yfinance} will be used to download daily data:
+
+\begin{itemize}
+    \item Adjusted close price (\texttt{Adj Close}).
+    \item Volume.
+    \item OHLC (Open, High, Low, Close) for intraday extension and possible derived features.
+\end{itemize}
+
+\subsection{Cleaning and alignment}
+
+\begin{itemize}
+    \item Align all assets on the same time index.
+    \item Fill holidays and non-trading days with \texttt{NaN} and avoid forward-fill in prices.
+    \item Remove assets with excessive gaps in the study period.
+\end{itemize}
+
+\subsection{Data structure}
+
+We will work with:
+
+\begin{itemize}
+    \item \textbf{Daily price DataFrame:} rows = dates, columns = assets.
+    \item \textbf{Daily volume DataFrame:} same structure.
+    \item \textbf{Daily returns DataFrame:} calculated as log-returns.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Construction of the monthly target}
+
+The objective is to predict the monthly log-return of the next month for each asset.
+
+\subsection{Target definition}
+
+Let $P_{t}^{(i)}$ be the adjusted close price of asset $i$ on day $t$.  
+We define the monthly log-return of asset $i$ between the start of month $m$ and the end of month $m$ as:
+
+
+
+\[
+r_{m}^{(i)} = \ln\left(\frac{P_{\text{end of month } m}^{(i)}}{P_{\text{start of month } m}^{(i)}}\right)
+\]
+
+
+
+The target to predict on the last day of month $m$ will be:
+
+
+
+\[
+y_{m+1}^{(i)} = r_{m+1}^{(i)}
+\]
+
+
+
+\subsection{Implementation}
+
+\begin{itemize}
+    \item Use \texttt{resample('M')} to identify the last day of each month.
+    \item For each asset, obtain the price of the first and last day of each month.
+    \item Calculate the monthly log-return.
+    \item Shift the target one month forward to associate it with the previous month's features.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Construction of the monthly dataset}
+
+Although the data is daily, the model works at the monthly level. For each month $m$ and asset $i$:
+
+\begin{itemize}
+    \item Features are calculated using data up to the last day of month $m$.
+    \item The target $y_{m+1}^{(i)}$ is associated.
+\end{itemize}
+
+\subsection{Time windows}
+
+Rolling windows over daily data will be used to construct features:
+
+\begin{itemize}
+    \item 1 month $\approx$ 21 days.
+    \item 3 months $\approx$ 63 days.
+    \item 6 months $\approx$ 126 days.
+\end{itemize}
+
+\subsection{Final dataset structure}
+
+Each row of the monthly dataset corresponds to a pair (asset $i$, month $m$) and contains:
+
+\begin{itemize}
+    \item Features calculated with data up to the end of month $m$.
+    \item Target $y_{m+1}^{(i)}$.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Final features for the monthly model}
+
+The feature design seeks a balance between:
+
+\begin{itemize}
+    \item Sufficient information to capture patterns.
+    \item Simplicity and robustness (avoid overfitting).
+    \item Reasonable interpretability.
+\end{itemize}
+
+\subsection{Past returns}
+
+\begin{itemize}
+    \item 1-month log-return:
+    
+
+\[
+    r_{1m}^{(i)}(m) = \ln\left(\frac{P_{\text{end of month } m}^{(i)}}{P_{\text{end of month } m-1}^{(i)}}\right)
+    \]
+
+
+    \item 3-month cumulative log-return.
+    \item 6-month cumulative log-return.
+\end{itemize}
+
+\subsection{Volatility}
+
+\begin{itemize}
+    \item 1-month volatility: standard deviation of daily log-returns of the last 21 days.
+    \item 3-month volatility: standard deviation of the last 63 days.
+\end{itemize}
+
+\subsection{Trend (moving averages)}
+
+\begin{itemize}
+    \item MA20: 20-day moving average of the closing price.
+    \item MA60: 60-day moving average.
+    \item MA20/MA60 ratio: relative trend indicator.
+\end{itemize}
+
+\subsection{Volume-based features}
+
+\begin{itemize}
+    \item 20-day average volume.
+    \item 60-day average volume.
+    \item Current volume / 20-day average volume ratio.
+\end{itemize}
+
+\subsection{OHLC-based features (derived, not raw)}
+
+Although the monthly pipeline does not need raw OHLC, it is useful to derive some features:
+
+\begin{itemize}
+    \item Average intraday range of the month:
+    
+
+\[
+    \text{Range}_{\text{avg}}(m) = \text{mean}_{t \in \text{month } m} (High_t - Low_t)
+    \]
+
+
+    \item Average candle body:
+    
+
+\[
+    \text{Body}_{\text{avg}}(m) = \text{mean}_{t \in \text{month } m} |Close_t - Open_t|
+    \]
+
+
+    \item Average True Range (to capture gaps).
+\end{itemize}
+
+These features are calculated with \texttt{pandas} and, if desired, with the help of libraries like \texttt{ta}.
+
+\subsection{Optional technical indicators}
+
+Optional, but useful if time permits:
+
+\begin{itemize}
+    \item RSI 14 days.
+    \item ATR (Average True Range) 14 days.
+\end{itemize}
+
+%--------------------------------------------------
+\section{General pipeline and rolling window scheme}
+
+The pipeline is executed in a monthly \textit{rolling} scheme. For each month $m$ in the backtesting period:
+
+\begin{enumerate}
+    \item Construct the dataset with data up to the end of month $m$ (historical features and targets).
+    \item Fit the scaling (\texttt{StandardScaler}) with data up to $m$.
+    \item Train ``naive'' models (without regimes) with data up to $m$.
+    \item Evaluate and save results of the naive models.
+    \item Detect the market regime in month $m$.
+    \item Select the appropriate model according to the regime (main method).
+    \item Generate return predictions for month $m+1$.
+    \item Generate Monte Carlo scenarios.
+    \item Optimize the portfolio for month $m+1$.
+    \item Apply transaction costs.
+    \item Record the net return of month $m+1$.
+\end{enumerate}
+
+This process is repeated month by month, without using future information (no \textit{data leakage}).
+
+%--------------------------------------------------
+\section{Predictive models}
+
+\subsection{Shallow models (classical ML)}
+
+The following models from \texttt{scikit-learn} and \texttt{xgboost} will be used:
+
+\begin{itemize}
+    \item Linear regression (\texttt{LinearRegression}).
+    \item Ridge, Lasso, Elastic Net.
+    \item Random Forest (\texttt{RandomForestRegressor}).
+    \item XGBoost (\texttt{XGBRegressor}).
+    \item Simple MLP (\texttt{MLPRegressor}, optional).
+\end{itemize}
+
+Hyperparameters will be set reasonably (no extreme search will be done to avoid overfitting and excessive time consumption).
+
+\subsection{Deep models (PyTorch)}
+
+Simple but representative models will be used:
+
+\subsubsection{Small LSTM}
+
+\begin{itemize}
+    \item LSTM layer with 32 units.
+    \item Dropout 0.2.
+    \item Final dense layer with 1 neuron (scalar output).
+\end{itemize}
+
+\subsubsection{Medium LSTM}
+
+\begin{itemize}
+    \item LSTM layer with 64 units.
+    \item Dropout 0.3.
+    \item Intermediate dense layer of 32 neurons.
+    \item Final dense layer of 1 neuron.
+\end{itemize}
+
+\subsubsection{Simple CNN}
+
+\begin{itemize}
+    \item Conv1D(32 filters, kernel=3).
+    \item MaxPool1D.
+    \item Flatten.
+    \item Dense(32).
+    \item Dense(1).
+\end{itemize}
+
+\subsubsection{Medium CNN}
+
+\begin{itemize}
+    \item Conv1D(32, kernel=3).
+    \item Conv1D(16, kernel=3).
+    \item MaxPool1D.
+    \item Flatten.
+    \item Dense(32).
+    \item Dense(1).
+\end{itemize}
+
+\subsection{Training naive models}
+
+In the first phase, all models are trained without distinguishing market regimes. This provides:
+
+\begin{itemize}
+    \item A clear baseline.
+    \item Comparable results between models.
+    \item Data to analyze which models work better in which environments.
+\end{itemize}
+
+%--------------------------------------------------
+\section{Normalization and data preparation}
+
+\texttt{StandardScaler} from \texttt{scikit-learn} will be used:
+
+\begin{itemize}
+    \item Fitted only with data available up to month $m$.
+    \item Applied to all numerical features.
+\end{itemize}
+
+For deep models, PyTorch tensors will be used, maintaining the same scaling.
+
+%--------------------------------------------------
+\section{Market Regime Detection through Clustering with Wasserstein Distance}
+
+Market regime detection is a central component of the pipeline, as it allows adapting the choice of predictive model to the statistical environment in which the market finds itself. In this project, regime detection is not based on predefined rules or technical indicators, but on an unsupervised approach that identifies regimes directly from the statistical structure of returns. To do this, a clustering method based on the Wasserstein distance between return distributions is used, following the methodology proposed in recent regime analysis literature.
+
+\subsection{Motivation}
+
+Financial markets exhibit dynamics that change over time: periods of stability, phases of high volatility, episodes of sharp declines, etc. These changes are not always evident from simple indicators, and may be better reflected in the complete shape of the return distribution than in point metrics such as mean or volatility.
+
+The use of Wasserstein distance allows comparing complete return distributions, capturing differences in:
+
+\begin{itemize}
+    \item mean,
+    \item volatility,
+    \item skewness,
+    \item kurtosis (heavy tails),
+    \item general distribution shape.
+\end{itemize}
+
+This allows detecting market regimes in a richer and more robust way than with methods based solely on technical indicators.
+
+\subsection{Construction of return distributions}
+
+The procedure begins by dividing the market index history (S\&P 500 or SPY) into fixed-length rolling windows, typically 60 days. For each window $w$, the empirical distribution of daily returns is obtained:
+
+
+
+\[
+\mathcal{D}_w = \{ r_{t}, r_{t+1}, \dots, r_{t+59} \}
+\]
+
+
+
+Each window represents a local state of the market.
+
+\subsection{Wasserstein distance between windows}
+
+For each pair of windows $(i, j)$ the Wasserstein-2 distance between their empirical distributions is calculated:
+
+
+
+\[
+d_{ij} = W_2(\mathcal{D}_i, \mathcal{D}_j)
+\]
+
+
+
+The Wasserstein distance measures the "minimum cost" of transforming one distribution into another, capturing differences in the entire shape of the distribution, not just in specific moments.
+
+This produces a distance matrix:
+
+
+
+\[
+D = [d_{ij}] \in \mathbb{R}^{T \times T}
+\]
+
+
+
+where $T$ is the number of windows.
+
+\subsection{Unsupervised clustering}
+
+From the distance matrix $D$, an unsupervised clustering method is applied to identify groups of windows with similar distributions. Hierarchical clustering or k-means is applied on an embedding obtained through techniques such as MDS (Multidimensional Scaling).
+
+The number of clusters is set to $k = 3$, following the literature and the standard financial interpretation of three main regimes.
+
+The result is a set of clusters:
+
+
+
+\[
+C_1, C_2, C_3
+\]
+
+
+
+Each cluster represents a distinct statistical regime of the market.
+
+\subsection{Economic interpretation of regimes}
+
+Although regimes are obtained in an unsupervised manner, it is possible to interpret them economically by analyzing the average characteristics of the windows belonging to each cluster:
+
+\begin{itemize}
+    \item average return,
+    \item average volatility,
+    \item skewness,
+    \item kurtosis.
+\end{itemize}
+
+This allows mapping clusters to classical financial regimes:
+
+\begin{itemize}
+    \item \textbf{Regime 1 (Bull Market):} narrow distributions, low or moderate volatility, positive returns.
+    \item \textbf{Regime 2 (Bear Market):} wide distributions, high volatility, heavy tails, negative returns.
+    \item \textbf{Regime 3 (Sideways / Mean-Reverting):} returns close to zero, intermediate volatility, stable distribution shape.
+\end{itemize}
+
+This mapping allows maintaining financial interpretability without giving up the power of the unsupervised approach.
+
+\subsection{Assignment of regimes over time}
+
+Each window $w$ receives a regime label according to the cluster to which it belongs.  
+The label of month $m$ is assigned according to the window ending in that month.
+
+This produces a time series of regimes:
+
+
+
+\[
+R_m \in \{1, 2, 3\}
+\]
+
+
+
+which is subsequently used to select the most appropriate predictive model for each environment.
+
+\subsection{Integration into the pipeline}
+
+The regime detected in month $m$ determines which model will be used to predict the returns of month $m+1$. For each regime, the model that has historically shown better performance within that regime is selected, according to the evaluation metrics defined in the project.
+
+This approach allows dynamically adapting the predictive model to market conditions, improving the robustness and stability of the pipeline.
+
+\section{Model selection by regime}
+
+Once regimes are defined, they are used to adapt model selection.
+
+\subsection{Main method: selection of the best naive model per regime}
+
+\subsubsection*{Idea}
+
+Models are not retrained by regime. Instead:
+
+\begin{itemize}
+    \item All naive models are trained with all data (up to each time point).
+    \item It is analyzed, a posteriori, which model works best in each regime.
+    \item In real time, the regime is detected and the model that has historically worked best in that regime is chosen.
+\end{itemize}
+
+\subsubsection*{Procedure}
+
+\begin{enumerate}
+    \item For each historical month $m$:
+    \begin{itemize}
+        \item The regime $R_m$ is known.
+        \item The predictions of each model and the actual returns are known.
+    \end{itemize}
+    \item For each regime $k$ and model $j$:
+    \begin{itemize}
+        \item Filter months with $R_m = k$.
+        \item Calculate metrics:
+        \begin{itemize}
+            \item MAE, RMSE.
+            \item Prediction--actual correlation.
+            \item Sign accuracy \%.
+            \item Optional: Sharpe of the strategy based on that model.
+        \end{itemize}
+    \end{itemize}
+    \item For each regime $k$, select the model $j^\ast$ with the best performance.
+    \item In the rolling backtest:
+    \begin{itemize}
+        \item In month $m$, detect the regime $R_m$.
+        \item Use the model $j^\ast(R_m)$ to predict returns of month $m+1$.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Optional extension: retrain specific models per regime}
+
+As an advanced extension:
+
+\begin{itemize}
+    \item For each regime $k$, a specific model is trained using only data from that regime.
+    \item In real time, the regime is detected and the model trained for that regime is used.
+\end{itemize}
+
+Risks:
+
+\begin{itemize}
+    \item Few data per regime.
+    \item Higher risk of overfitting.
+    \item Higher computational cost.
+\end{itemize}
+
+Therefore, it is kept as an optional extension, not as the core.
+
+%--------------------------------------------------
+\section{Portfolio optimization}
+
+\subsection{General approach}
+
+Given a vector of expected returns $\hat{r}$ (predictions) and a covariance matrix $\Sigma$, we seek a weight vector $w$ that maximizes the expected return subject to constraints.
+
+
+
+\[
+\max_w \; w^\top \hat{r}
+\]
+
+
+
+Subject to:
+
+\begin{itemize}
+    \item $w_i \ge 0$ (no shorts).
+    \item $\sum_i w_i = 1$ (fully invested).
+    \item $w_i \le w_{\max}$ (for example, 0.10--0.15).
+\end{itemize}
+
+\subsection{Implementation with \texttt{riskfolio-lib}}
+
+\begin{itemize}
+    \item Build a portfolio object with historical and/or predicted returns.
+    \item Specify the risk model (classical covariance or Ledoit--Wolf).
+    \item Define weight constraints.
+    \item Solve the optimization problem.
+\end{itemize}
+
+Both a return maximization approach for a given risk level and mean-variance variants can be used.
+
+%--------------------------------------------------
+\section{Robust Monte Carlo Simulation}
+
+Monte Carlo simulation constitutes an essential component of the pipeline, as it allows explicitly incorporating the inherent uncertainty in both return predictions and the estimation of the covariance matrix. Instead of optimizing the portfolio solely on a single expected return vector $\hat{r}$, multiple plausible scenarios of future returns are generated and the portfolio is optimized in each of them. This approach produces more stable, diversified portfolios that are less sensitive to estimation error, mitigating one of the classical problems of mean-variance optimization.
+
+\subsection{Motivation and theoretical foundation}
+
+Classical Markowitz optimization uses a single pair $(\hat{r}, \Sigma)$, where:
+
+
+
+\[
+\hat{r} \in \mathbb{R}^N \quad \text{and} \quad \Sigma \in \mathbb{R}^{N \times N}
+\]
+
+
+
+represent, respectively, the estimated expected returns and covariance matrix.  
+However:
+
+\begin{itemize}
+    \item $\hat{r}$ is a prediction subject to error.
+    \item $\Sigma$ is a noisy estimate based on a finite sample.
+    \item Classical optimization is extremely sensitive to small perturbations in $\hat{r}$.
+\end{itemize}
+
+Therefore, optimizing over a single estimated point can lead to unstable and unrealistic solutions.  
+Monte Carlo allows approximating the distribution of possible futures and optimizing over it.
+
+\subsection{Probabilistic model for future returns}
+
+It is assumed that future returns follow a multivariate normal distribution:
+
+
+
+\[
+r \sim \mathcal{N}(\hat{r}, \Sigma)
+\]
+
+
+
+This choice is justified by:
+
+\begin{itemize}
+    \item its standard use in quantitative finance,
+    \item its ability to capture correlations between assets,
+    \item its computational efficiency,
+    \item its compatibility with convex optimization.
+\end{itemize}
+
+Although the actual return distribution is not normal, this approximation is sufficient to generate plausible scenarios consistent with the correlation structure.
+
+\subsection{Scenario generation}
+
+Let $S$ be the number of Monte Carlo scenarios (typically $S = 500$ or $S = 1000$).  
+Each scenario is generated as:
+
+
+
+\[
+r^{(s)} = \hat{r} + L z^{(s)}, \qquad z^{(s)} \sim \mathcal{N}(0, I)
+\]
+
+
+
+where $L$ is the Cholesky decomposition of $\Sigma$:
+
+
+
+\[
+\Sigma = LL^\top
+\]
+
+
+
+This procedure guarantees that:
+
+\begin{itemize}
+    \item scenarios respect correlations between assets,
+    \item the dispersion of returns is consistent with estimated volatility,
+    \item a realistic range of possible futures is explored.
+\end{itemize}
+
+\subsection{Optimization per scenario}
+
+For each scenario $r^{(s)}$ the problem is solved:
+
+
+
+\[
+\max_{w^{(s)}} \; (w^{(s)})^\top r^{(s)}
+\]
+
+
+
+subject to:
+
+
+
+\[
+w^{(s)}_i \ge 0, \qquad \sum_i w^{(s)}_i = 1, \qquad w^{(s)}_i \le w_{\max}
+\]
+
+
+
+where $w_{\max}$ is typically $0.10$–$0.15$.
+
+This process produces a set of $S$ weight vectors:
+
+
+
+\[
+\mathcal{W} = \{ w^{(1)}, w^{(2)}, \dots, w^{(S)} \}
+\]
+
+
+
+Each $w^{(s)}$ represents the optimal portfolio under a possible future consistent with the available information.
+
+\subsection{Robust weight aggregation}
+
+The objective is to obtain a single robust weight vector $w^\ast$ that synthesizes the information contained in the $S$ scenarios.
+
+\subsubsection{Mean of weights}
+
+
+
+\[
+w^\ast = \frac{1}{S} \sum_{s=1}^S w^{(s)}
+\]
+
+
+
+Produces smooth and diversified portfolios.  
+It is suitable when a conservative bias is not desired.
+
+\subsubsection{Median of weights}
+
+
+
+\[
+w^\ast_i = \text{median}\left( w^{(1)}_i, \dots, w^{(S)}_i \right)
+\]
+
+
+
+More robust against extreme scenarios or degenerate solutions.
+
+\subsubsection{Conservative percentile}
+
+For a level $\alpha$ (for example, $25\%$):
+
+
+
+\[
+w^\ast_i = \text{percentile}_\alpha \left( w^{(1)}_i, \dots, w^{(S)}_i \right)
+\]
+
+
+
+Favors prudent portfolios, reducing exposure to assets with high uncertainty.
+
+\subsection{Financial interpretation}
+
+The Monte Carlo approach allows:
+
+\begin{itemize}
+    \item explicitly incorporating uncertainty in predictions,
+    \item avoiding extreme solutions typical of classical optimization,
+    \item obtaining more stable portfolios over time,
+    \item capturing the dispersion of possible futures,
+    \item reducing sensitivity to errors in $\hat{r}$ and $\Sigma$,
+    \item improving robustness against regime changes.
+\end{itemize}
+
+In essence, the optimization over a single estimated future is replaced by an optimization over a range of plausible futures, which produces more realistic decisions consistent with the uncertain nature of financial markets.
+
+\subsection{Relationship with decision theory under uncertainty}
+
+The method can be interpreted as:
+
+\begin{itemize}
+    \item a numerical approximation to stochastic optimization,
+    \item a particular case of \textit{robust optimization},
+    \item a way to smooth the objective function through integration over the return distribution,
+    \item a technique to approximate the expected value of the optimal policy under uncertainty.
+\end{itemize}
+
+In formal terms, the implicit objective is:
+
+
+
+\[
+w^\ast = \arg\max_w \; \mathbb{E}_{r \sim \mathcal{N}(\hat{r}, \Sigma)}[w^\top r]
+\]
+
+
+
+but subject to additional stability and robustness constraints through aggregation.
+
+\subsection{Conclusion}
+
+Robust Monte Carlo simulation is a fundamental component of the pipeline, as it allows obtaining more stable, diversified portfolios that are resistant to estimation error. Its integration with classical optimization provides an appropriate balance between mathematical sophistication, interpretability and computational feasibility.
+
+
+%--------------------------------------------------
+\section{Transaction costs}
+
+They are modeled as proportional to the rebalancing volume:
+
+
+
+\[
+\text{Cost}_m = c \cdot \sum_i |w_{m,i} - w_{m-1,i}|
+\]
+
+
+
+where $c$ is the cost per unit of weight change.
+
+The net return of month $m$ is:
+
+
+
+\[
+R_{\text{net}, m} = R_{\text{gross}, m} - \text{Cost}_m
+\]
+
+
+
+%--------------------------------------------------
+\section{Evaluation}
+
+\subsection{Basic statistical evaluation}
+
+MAE, RMSE, correlation, sign accuracy.
+
+%--------------------------------------------------
+\subsection{Advanced statistical evaluation: significance tests}
+
+In addition to basic metrics, statistical tests will be applied to rigorously evaluate the quality of models and the significance of their parameters.
+
+\subsubsection{Tests for linear regression (Statsmodels)}
+
+Using \texttt{statsmodels.api.OLS} the following are obtained:
+
+\begin{itemize}
+    \item \textbf{t-tests} for individual coefficients:
+    
+
+\[
+    t_j = \frac{\hat{\beta}_j}{\text{SE}(\hat{\beta}_j)}
+    \]
+
+
+    They allow evaluating whether each feature has a significant effect on the return.
+    \item \textbf{p-values} associated with each coefficient.
+    \item \textbf{F-test} of global model significance.
+    \item \textbf{Durbin–Watson} for residual autocorrelation.
+    \item \textbf{Breusch–Pagan} for heteroskedasticity.
+    \item \textbf{Jarque–Bera} for residual normality.
+\end{itemize}
+
+\subsubsection{Tests to compare models}
+
+\begin{itemize}
+    \item \textbf{Diebold–Mariano test} to compare prediction errors between two models.
+    \item \textbf{Mean difference test} for MAE or RMSE.
+    \item \textbf{Binomial test} to evaluate whether sign accuracy is greater than 50\%.
+\end{itemize}
+
+\subsubsection{Tests on predictive utility}
+
+\begin{itemize}
+    \item Test of mean errors = 0.
+    \item Test of prediction–actual correlation $\neq 0$.
+\end{itemize}
+
+These tests allow evaluating whether predictions contain statistically significant information.
+
+%--------------------------------------------------
+\subsection{Financial evaluation}
+
+Sharpe, volatility, annualized return, drawdown, turnover.
+
+Benchmarks: 1/N, Buy \& Hold, Markowitz without ML.
+
+
+%--------------------------------------------------
+\section{Optional extension: intraday modeling with Transformers}
+
+This section is an independent extension of the main pipeline. It does not affect the monthly design, but serves as an exploration of modern architectures.
+
+\subsection{Intraday data}
+
+\begin{itemize}
+    \item Asset: SPY (S\&P 500 ETF).
+    \item Frequency: 5 minutes.
+    \item Period: 2020--2024.
+    \item Variables: OHLCV (Open, High, Low, Close, Volume).
+\end{itemize}
+
+\subsection{Sequence construction}
+
+\begin{itemize}
+    \item Sliding windows of length 100 (500 minutes $\approx$ 1--2 trading days).
+    \item Each window is represented as a sequence of normalized OHLCV vectors.
+\end{itemize}
+
+\subsection{Prediction task}
+
+Possible examples:
+
+\begin{itemize}
+    \item Binary classification: up/down in the next interval.
+    \item Multi-class classification: return range.
+\end{itemize}
+
+\subsection{Models}
+
+\begin{itemize}
+    \item Small LSTM (baseline).
+    \item Small 1D Transformer:
+    \begin{itemize}
+        \item Linear embedding of the input.
+        \item 2--3 multi-head attention layers.
+        \item Final dense layer.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Metrics}
+
+\begin{itemize}
+    \item Accuracy.
+    \item F1-score.
+    \item AUC-ROC.
+\end{itemize}
+
+The objective of this extension is exploratory: to compare the performance of Transformers versus LSTM in an intraday environment.
+
+%--------------------------------------------------
+\section{Closing of the methodological design}
+
+The final project design is closed with the following key elements:
+
+\begin{itemize}
+    \item Monthly return prediction with ML and DL models (naive first).
+    \item Market regime detection with simple methods (and Wasserstein as an extension).
+    \item Dynamic model selection by regime (main method: choose the best naive model per regime).
+    \item Portfolio optimization with \texttt{riskfolio-lib}.
+    \item Robustness through Monte Carlo.
+    \item Explicit transaction costs.
+    \item Complete statistical and financial evaluation.
+    \item Optional intraday extension with Transformers and OHLCV.
+\end{itemize}
+
+This document defines in a concrete and closed way what will be done and how it will be done, serving as a master guide for implementation and, subsequently, for writing the thesis.
+
+\end{document}
