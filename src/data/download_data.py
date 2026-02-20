@@ -22,19 +22,8 @@ class DownloadData():
         
         print("\Download complete.")
 
-    def download_spy(self):
-        file_path = f"{self.output_path}/spy.csv"
-        print(" Downloading SPY") 
-        try: 
-            df = yf.download("SPY", start="2010-01-01", end="2026-02-01",auto_adjust=False) 
-            df.to_csv(file_path,index=True) 
-        except Exception as e:
-            print("Error downloading SPY: {e}") 
-        
-        print("\nDownload complete.")
-
     def download_gspc(self):
-        file_path = f"{self.output_path}/gspc.csv"
+        file_path = f"{self.output_path}/GSPC.csv"
         print(" Downloading GSPC") 
         try: 
             df = yf.download("^GSPC", start="2010-01-01", end="2026-02-01",auto_adjust=False) 
