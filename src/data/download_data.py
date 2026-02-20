@@ -2,6 +2,7 @@ import yfinance as yf
 import os
 
 class DownloadData():
+    """Downloads historical stock price data from yfinance and saves it as CSV files."""
 
     def __init__(self,tickers):
         self.tickers = tickers
@@ -12,33 +13,33 @@ class DownloadData():
 
         for tick in self.tickers: 
             file_path = os.path.join(self.output_path, f"{tick}.csv")
-            print(f" Descargando {tick}") 
+            print(f" Downloading {tick}") 
             try: 
                 df = yf.download(tick, start="2010-01-01", end="2026-02-01",auto_adjust=False) 
                 df.to_csv(file_path,index=True) 
             except Exception as e:
-                print(f"Error descargando {tick}: {e}") 
+                print(f"Error downloading {tick}: {e}") 
         
-        print("\nDescarga completada.")
+        print("\Download complete.")
 
     def download_spy(self):
         file_path = f"{self.output_path}/spy.csv"
-        print(" Descargando SPY") 
+        print(" Downloading SPY") 
         try: 
             df = yf.download("SPY", start="2010-01-01", end="2026-02-01",auto_adjust=False) 
             df.to_csv(file_path,index=True) 
         except Exception as e:
-            print("Error descargando SPY: {e}") 
+            print("Error downloading SPY: {e}") 
         
-        print("\nDescarga completada.")
+        print("\nDownload complete.")
 
     def download_gspc(self):
         file_path = f"{self.output_path}/gspc.csv"
-        print(" Descargando GSPC") 
+        print(" Downloading GSPC") 
         try: 
             df = yf.download("^GSPC", start="2010-01-01", end="2026-02-01",auto_adjust=False) 
             df.to_csv(file_path,index=True) 
         except Exception as e:
-            print("Error descargando GSPC: {e}") 
+            print("Error downloading GSPC: {e}") 
         
-        print("\nDescarga completada.")
+        print("\nDownload complete.")
