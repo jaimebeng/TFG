@@ -4,14 +4,13 @@ import os
 class DownloadData():
     """Downloads historical stock price data from yfinance and saves it as CSV files."""
 
-    def __init__(self,tickers):
-        self.tickers = tickers
+    def __init__(self,):
         self.output_path = "/Users/jaime/Documents/UPM/TFG/data/raw"
         os.makedirs(self.output_path, exist_ok=True)
 
-    def download_tick_data(self):
+    def download_tick_data(self,tickers):
 
-        for tick in self.tickers: 
+        for tick in tickers: 
             file_path = os.path.join(self.output_path, f"{tick}.csv")
             print(f" Downloading {tick}") 
             try: 
