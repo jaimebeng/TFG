@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+from pathlib import Path
+
 
 class CleanData():
     """Minimal data cleaner for already well-structured input files.
@@ -7,16 +9,19 @@ class CleanData():
     Saves in data/clean.
     """
 
-    def __innit__(self,dfs):
-        self.dfs = dfs
+    def __init__(self):
         self.output_path = "/Users/jaime/Documents/UPM/TFG/data/clean"
         os.makedirs(self.output_path, exist_ok=True)
     
     def clean_data(self):
-
-        for ticker,df in self.dfs.items():
+        directory = "/Users/jaime/Documents/UPM/TFG/data/raw"
+        for filename in os.listdir(directory):
+            full_path = os.path.join(directory, filename)
+            df = pd.read_csv(full_path, header=[0,1], index_col=0)
             df = df.droplevel(1,axis=1)
             df.columns.name = None
+            file = Path(filename)
+            ticker = file.stem
             file_path = os.path.join(self.output_path, f"{ticker}.csv")
             df.to_csv(file_path,index=True) 
 
