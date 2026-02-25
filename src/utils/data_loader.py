@@ -12,7 +12,7 @@ class DataLoader():
         if type not in ["raw","clean","processed","features"]:
             raise ValueError("Type must be raw, clean, processed or features")
         
-        path = os.path.join(self.data_path,type,ticker,".csv")
+        path = os.path.join(self.data_path, type, f"{ticker}.csv")
         df = pd.read_csv(path, header=[0,1], index_col=0)
 
         return df
@@ -23,7 +23,7 @@ class DataLoader():
         
         dfs = {}
         for ticker in tickers:
-            path = os.path.join(self.data_path,type,ticker,".csv")
+            path = os.path.join(self.data_path, type, f"{ticker}.csv")
             df = pd.read_csv(path, header=[0,1], index_col=0)
             dfs[ticker] = df
 
