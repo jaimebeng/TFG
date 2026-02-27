@@ -5,7 +5,7 @@ class DownloadData():
     """Downloads historical stock price data from yfinance and saves it as CSV files."""
 
     def __init__(self,):
-        self.output_path = "~/Documents/TFG/data/raw"
+        self.output_path = "/home/jaime/Documents/TFG/data/raw"
         os.makedirs(self.output_path, exist_ok=True)
 
     def download_tick_data(self,tickers):

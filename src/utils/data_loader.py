@@ -6,7 +6,7 @@ class DataLoader():
     Supports loading a single ticker file or multiple ticker files by data type."""
 
     def __init__(self):
-        self.data_path = "/Users/jaime/Documents/UPM/TFG/data/"
+        self.data_path = "/home/jaime/Documents/TFG/data/"
     
     def load_single_data(self,type,ticker):
         if type not in ["raw","clean","processed","features"]:
