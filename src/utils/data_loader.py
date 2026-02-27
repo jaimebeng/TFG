@@ -14,6 +14,7 @@ class DataLoader():
         
         path = os.path.join(self.data_path, type, f"{ticker}.csv")
         df = pd.read_csv(path, header=0, index_col=0)
+        print(f"{ticker}.csv loaded succesfully")
 
         return df
     
@@ -26,6 +27,8 @@ class DataLoader():
             path = os.path.join(self.data_path, type, f"{ticker}.csv")
             df = pd.read_csv(path, header=0, index_col=0)
             dfs[ticker] = df
+            print(f"{ticker}.csv loaded succesfully")
+
 
         return dfs
 

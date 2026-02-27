@@ -70,5 +70,7 @@ class ProcessData():
             file = Path(filename)
             ticker = file.stem
             file_path = os.path.join(self.output_path, f"{ticker}.csv")
-            df.to_csv(file_path,index=True) 
+            df.to_csv(file_path,index=True)
+            print(f"{ticker}.csv processed succesfully")
+
     
