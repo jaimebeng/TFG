@@ -10,11 +10,11 @@ class CleanData():
     """
 
     def __init__(self):
-        self.output_path = "/Users/jaime/Documents/UPM/TFG/data/clean"
+        self.output_path = "~/Documents/TFG/data/clean"
         os.makedirs(self.output_path, exist_ok=True)
     
     def clean_data(self):
-        directory = "/Users/jaime/Documents/UPM/TFG/data/raw"
+        directory = "~/Documents/TFG/data/raw"
         for filename in os.listdir(directory):
             full_path = os.path.join(directory, filename)
             df = pd.read_csv(full_path, header=[0,1], index_col=0)
