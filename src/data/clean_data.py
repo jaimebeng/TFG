@@ -24,7 +24,7 @@ class CleanData():
             file = Path(filename)
             ticker = file.stem
             file_path = os.path.join(self.output_path, f"{ticker}.csv")
-            df.to_csv(file_path,index=True) 
+            df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
             print(f"{ticker}.csv cleaned succesfully")
 
 
