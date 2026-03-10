@@ -64,13 +64,14 @@ class ProcessData():
     def process_data(self):
         directory = "/home/jaime/Documents/TFG/data/clean"
         for filename in os.listdir(directory):
-            full_path = os.path.join(directory, filename)
-            df = pd.read_csv(full_path, header=0, index_col=0)
-            df = self.process_ticker(df)
-            file = Path(filename)
-            ticker = file.stem
-            file_path = os.path.join(self.output_path, f"{ticker}.csv")
-            df.to_csv(file_path,index=True)
-            print(f"{ticker}.csv processed succesfully")
+            if filename != "GSPC.csv":
+                full_path = os.path.join(directory, filename)
+                df = pd.read_csv(full_path, header=0, index_col=0)
+                df = self.process_ticker(df)
+                file = Path(filename)
+                ticker = file.stem
+                file_path = os.path.join(self.output_path, f"{ticker}.csv")
+                df.to_csv(file_path,index=True)
+                print(f"{ticker}.csv processed succesfully")
 
     
