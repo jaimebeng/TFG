@@ -53,7 +53,10 @@ class ProcessData():
         df["10-day Efficiency Ratio"] = df["Adj Close"].diff(21).abs() / df["Adj Close"].diff().abs().rolling(21).sum()
         df["Body Up"] = df["Daily Candle Body"].clip(lower=0)
         df["Body Down"] = -df["Daily Candle Body"].clip(upper=0)
-        df["Monthly Conviction Ratio"] = (df["Body Up"].rolling(21).mean() /df["Body Down"].rolling(21).mean())
+        epsilon = 1e-8
+        rolling_up = df["Body Up"].rolling(21).mean()
+        rolling_down = df["Body Down"].rolling(21).mean()
+        df["Monthly Conviction Ratio"] = rolling_up / (rolling_down + epsilon)
 
         return df
 
