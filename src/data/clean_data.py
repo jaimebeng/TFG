@@ -20,6 +20,7 @@ class CleanData():
             df = pd.read_csv(full_path, header=[0,1], index_col=0)
             df = df.droplevel(1,axis=1)
             df.columns.name = None
+            df.index = pd.to_datetime(df.index)
             file = Path(filename)
             ticker = file.stem
             file_path = os.path.join(self.output_path, f"{ticker}.csv")
