@@ -14,7 +14,7 @@ class DataLoader():
             raise ValueError("Type must be raw, clean, processed or features")
         
         path = os.path.join(self.data_path, type, f"{ticker}.csv")
-        df = pd.read_csv(path, header=0, index_col=0)
+        df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
         print(f"{ticker}.csv loaded succesfully")
 
         return df
