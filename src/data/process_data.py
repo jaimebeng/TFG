@@ -51,13 +51,9 @@ class ProcessData():
         df["Normalized Average True Range"] = (df["14-day Average True Range"]/df["Adj Close"]) * 100
         df["10-day Efficiency Ratio"] = df["Adj Close"].diff(10).abs() / df["Adj Close"].diff().abs().rolling(10).sum()
         df["10-day Efficiency Ratio"] = df["Adj Close"].diff(21).abs() / df["Adj Close"].diff().abs().rolling(21).sum()
-        df["Up Days"] = (df["Adj Close"] > df["Open"]).astype(int)
-        df["Down Days"] = (df["Adj Close"] < df["Open"]).astype(int)
-        df["Body Up"] = df["Daily Candle Body"].where(df["Daily Candle Body"] > 0, 0)
-        df["Body Down"] = -df["Daily Candle Body"].where(df["Daily Candle Body"] < 0, 0)
-        df["Average Body Up"] = df["Body Up"].sum() / df["Up Days"].sum()
-        df["Average Body Down"] = df["Body Down"].sum() / df["Down Days"].sum()
-        df["Conviction Ratio"] = df["Average Body Up"] / df["Average Body Down"]
+        df["Body Up"] = df["Daily Candle Body"].clip(lower=0)
+        df["Body Down"] = -df["Daily Candle Body"].clip(upper=0)
+        df["Monthly Conviction Ratio"] = (df["Body Up"].rolling(21).mean() /df["Body Down"].rolling(21).mean())
 
         return df
 
