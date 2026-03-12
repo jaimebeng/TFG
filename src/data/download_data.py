@@ -14,7 +14,7 @@ class DownloadData():
             file_path = os.path.join(self.output_path, f"{tick}.csv")
             print(f" Downloading {tick}") 
             try: 
-                df = yf.download(tick, start="2010-01-01", end="2026-02-01",auto_adjust=False) 
+                df = yf.download(tick, start="2010-01-01", end="2026-02-01",auto_adjust=True) 
                 df.to_csv(file_path,index=True) 
             except Exception as e:
                 print(f"Error downloading {tick}: {e}") 
@@ -25,7 +25,7 @@ class DownloadData():
         file_path = f"{self.output_path}/GSPC.csv"
         print(" Downloading GSPC") 
         try: 
-            df = yf.download("^GSPC", start="2010-01-01", end="2026-02-01",auto_adjust=False) 
+            df = yf.download("^GSPC", start="2010-01-01", end="2026-02-01",auto_adjust=True) 
             df.to_csv(file_path,index=True) 
         except Exception as e:
             print("Error downloading GSPC: {e}") 
