@@ -34,8 +34,8 @@ class ProcessData():
         df["Monthly Average Intraday Range"] = df["Daily Range"].rolling(21).mean()
         df["True Range"] = np.maximum.reduce([df["Daily Range"],(df["High"] - df["Adj Close"].shift(1)).abs(),(df["Low"] - df["Adj Close"].shift(1)).abs()])
         df["Monthly Average True Range"] = df["True Range"].rolling(21).mean()
-        df["Daily Candle Body"] = (df["Adj Close"] - df["Open"]).abs()
-        df["Monthly Average Candle Body"] = df["Daily Candle Body"].rolling(21).mean()
+        df["Daily Candle Body"] = (df["Adj Close"] - df["Open"])
+        df["Monthly Average Candle Body"] = df["Daily Candle Body"].abs().rolling(21).mean()
         df["Percentage Intraday Range"] = ((df["High"] - df["Low"]) / df["Open"]) * 100
         df["Monthly Average Percentage Intraday Range"] = df["Percentage Intraday Range"].rolling(21).mean()
         df["Price Difference"] = df["Adj Close"].diff()
