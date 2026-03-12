@@ -21,11 +21,11 @@ class ProcessData():
         df["Quarterly Volatility"] = df["Log Returns"].rolling(63).std()
         df["Semi-annual Volatility"] = df["Log Returns"].rolling(126).std()
         df["Volatility Ratio"] = df["Monthly Volatility"] / df["Quarterly Volatility"]
-        df["MA20"] = df["Log Returns"].rolling(20).mean()
-        df["MA60"] = df["Log Returns"].rolling(60).mean()
+        df["MA20"] = df["Adj Close"].rolling(20).mean()
+        df["MA60"] = df["Adj Close"].rolling(60).mean()
         df["MA20/MA60"] = df["MA20"] / df["MA60"]
         df["Distance from MA20"] = ((df["Adj Close"] - df["MA20"]) / df["MA20"] ) * 100
-        df["Distance from MA60"] = ((df["Adj Close"] - df["MA20"]) / df["MA60"] ) * 100
+        df["Distance from MA60"] = ((df["Adj Close"] - df["MA60"]) / df["MA60"] ) * 100
         df["VMA20"] = df["Volume"].rolling(20).mean()
         df["VMA60"] = df["Volume"].rolling(60).mean()
         df["Relative Volume"] = df["Volume"] / df["VMA20"].shift(1)
@@ -41,8 +41,6 @@ class ProcessData():
         df["Price Difference"] = df["Adj Close"].diff()
         df["Gains"] = df["Price Difference"].where(df["Price Difference"] > 0, 0)
         df["Losses"] = df["Price Difference"].where(df["Price Difference"] < 0, 0).abs()
-        df["Average Gains"] = df["Gains"].rolling(14).mean()
-        df["Average Losses"] = df["Losses"].rolling(14).mean()
         df["Average Gains"] = df["Gains"].ewm(alpha=1/14, adjust=False).mean()
         df["Average Losses"] = df["Losses"].ewm(alpha=1/14, adjust=False).mean()
         df["RS"] = df["Average Gains"] / df["Average Losses"]
@@ -50,7 +48,7 @@ class ProcessData():
         df["14-day Average True Range"] = df["True Range"].ewm(alpha=1/14, adjust=False).mean()
         df["Normalized Average True Range"] = (df["14-day Average True Range"]/df["Adj Close"]) * 100
         df["10-day Efficiency Ratio"] = df["Adj Close"].diff(10).abs() / df["Adj Close"].diff().abs().rolling(10).sum()
-        df["10-day Efficiency Ratio"] = df["Adj Close"].diff(21).abs() / df["Adj Close"].diff().abs().rolling(21).sum()
+        df["21-day Efficiency Ratio"] = df["Adj Close"].diff(21).abs() / df["Adj Close"].diff().abs().rolling(21).sum()
         df["Body Up"] = df["Daily Candle Body"].clip(lower=0)
         df["Body Down"] = -df["Daily Candle Body"].clip(upper=0)
         epsilon = 1e-8
