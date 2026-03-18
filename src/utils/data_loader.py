@@ -27,7 +27,7 @@ class DataLoader():
         dfs = {}
         for filename in os.listdir(directory):
             full_path = os.path.join(directory, filename)
-            df = pd.read_csv(full_path, header=0, index_col=0)
+            df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
             file = Path(filename)
             ticker = file.stem
             dfs[ticker] = df
