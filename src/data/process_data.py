@@ -16,6 +16,7 @@ class ProcessData():
     
 
     # auxiliary method for hurst exponent
+    @staticmethod
     def hurst(close, window=63, n_values=[6,8,11,15,21]):
 
         log_returns = np.log(close / close.shift(1))
