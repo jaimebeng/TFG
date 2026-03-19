@@ -17,18 +17,19 @@ class ProcessData():
 
     # auxiliary method for hurst exponent
     @staticmethod
-    def hurst(close, window=63, n_values=[6,8,11,15,21]):
-
+    def hurst(close, window=63, n_values=None):
+        if n_values is None:
+            n_values = [6, 8, 11, 15, 21]
+        
         log_returns = np.log(close / close.shift(1))
         valid_idx = log_returns.notna()
         lr = log_returns[valid_idx].to_numpy()
         N = len(lr)
-        
+
         if N < window:
-            return pd.Series(np.nan, index=close.index) 
+            return pd.Series(np.nan, index=close.index)
 
         win_arr = sliding_window_view(lr, window_shape=window)
-        
         H_list = []
 
         for win in win_arr:
@@ -38,29 +39,32 @@ class ProcessData():
                 if n >= window:
                     continue
                 chunks = window // n
-                reshaped = win[:chunks*n].reshape(chunks, n)
-                
+                if chunks < 2:
+                    continue  
+                reshaped = win[:chunks * n].reshape(chunks, n)
+
                 mean_chunk = reshaped.mean(axis=1, keepdims=True)
                 dev = reshaped - mean_chunk
                 cum_dev = np.cumsum(dev, axis=1)
                 R = cum_dev.max(axis=1) - cum_dev.min(axis=1)
-                S = reshaped.std(axis=1)
+                S = reshaped.std(axis=1, ddof=1) 
                 rs = R / S
                 rs = rs[np.isfinite(rs)]
+                
                 if len(rs) > 0:
                     rs_vals.append(rs.mean())
                     n_used.append(n)
-            
+
             if len(rs_vals) > 1:
                 H = np.polyfit(np.log(n_used), np.log(rs_vals), 1)[0]
             else:
                 H = np.nan
             H_list.append(H)
-    
+
         H_array = np.full(len(close), np.nan)
         start_idx = (~valid_idx).sum() + (window - 1)
         H_array[start_idx:start_idx + len(H_list)] = H_list
-            
+
         return pd.Series(H_array, index=close.index)
 
     def process_ticker(self, df):
@@ -114,6 +118,7 @@ class ProcessData():
         df["Monthly Overnight Gap Ratio"] = ((df["Open"]-df["Close"].shift(1))/df["Close"].shift(1)).rolling(21).mean()
         df["Monthly Skewness"] = df["Log Returns"].rolling(21).skew()
         df["Monthly Kurtosis"] = df["Log Returns"].rolling(21).kurt()
+        df["Monthly Hurst Exponent"] = self.hurst(df['Close'], window=21, n_values=[6,8,11,15,21])
         df["Quarterly Hurst Exponent"] = self.hurst(df['Close'], window=63, n_values=[6,8,11,15,21])
         df["Quarterly Efficiency Ratio"] = df["Close"].diff(63).abs() / df["Close"].diff().abs().rolling(63).sum()
         df["Monthly Close-Location Value"] = (((2*df["Close"]) - df["High"] - df["Low"])/df["Daily Range"]).rolling(21).mean()
