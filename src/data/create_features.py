@@ -49,8 +49,8 @@ class FeatureCreation():
         for filename in os.listdir(directory):
             if filename != "GSPC.csv":
                 full_path = os.path.join(directory, filename)
-                df = pd.read_csv(full_path, header=0, index_col=0)
-                df = self.features_ticker(df)
+                df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
+                df = self.features_engineering(df)
                 file = Path(filename)
                 ticker = file.stem
                 file_path = os.path.join(self.output_path, f"{ticker}.csv")
