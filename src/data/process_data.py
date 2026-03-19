@@ -114,7 +114,7 @@ class ProcessData():
         df["Monthly Overnight Gap Ratio"] = ((df["Open"]-df["Close"].shift(1))/df["Close"].shift(1)).rolling(21).mean()
         df["Monthly Skewness"] = df["Log Returns"].rolling(21).skew()
         df["Monthly Kurtosis"] = df["Log Returns"].rolling(21).kurt()
-        df["Quarterly Hurst Exponent"] = hurst(df['Close'], window=63, n_values=[6,8,11,15,21])
+        df["Quarterly Hurst Exponent"] = self.hurst(df['Close'], window=63, n_values=[6,8,11,15,21])
         df["Quarterly Efficiency Ratio"] = df["Close"].diff(63).abs() / df["Close"].diff().abs().rolling(63).sum()
         df["Monthly Close-Location Value"] = (((2*df["Close"]) - df["High"] - df["Low"])/df["Daily Range"]).rolling(21).mean()
         df["Monthly Intraday Intensity"] = df["Monthly Close-Location Value"] * (1/df["Volume"])
