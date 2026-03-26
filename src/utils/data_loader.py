@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from pathlib import Path
 
-class DataLoader():
+class DataLoad():
     """Utility class for loading project datasets from disk.
     Supports loading a single ticker file or multiple ticker files by data type."""
 
