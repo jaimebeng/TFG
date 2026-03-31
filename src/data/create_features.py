@@ -32,7 +32,7 @@ class FeatureCreation():
             "VMA20", "Distance from MA60", "Volume Flow Ratio", "Relative Volume",
             "14-day Average True Range", "Body Up", "Body Down", "Monthly Conviction Ratio",
             "Monthly Volatility", "Monthly Parkinson Volatility", "Monthly Normalized Intraday Intensity",
-            "Normalized Average True Range", "Quarterly Hurst Exponent", "Monthly Overnight Gap Ratio",
+            "Normalized Average True Range", "Monthly Hurst Exponent","Quarterly Hurst Exponent", "Monthly Overnight Gap Ratio",
             "Monthly Close-Location Value", "5-day RSI Slope"
         ]
         df = df.drop(columns=columns_to_drop)
