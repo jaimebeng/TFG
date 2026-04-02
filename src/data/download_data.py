@@ -5,13 +5,13 @@ class DownloadData():
     """Downloads historical stock price data from yfinance and saves it as CSV files."""
 
     def __init__(self,):
-        self.output_path = "/home/jaime/Documents/TFG/data/raw"
+        self._output_path = "/home/jaime/Documents/TFG/data/raw"
         os.makedirs(self.output_path, exist_ok=True)
 
     def download_tick_data(self,tickers):
 
         for tick in tickers: 
-            file_path = os.path.join(self.output_path, f"{tick}.csv")
+            file_path = os.path.join(self._output_path, f"{tick}.csv")
             print(f" Downloading {tick}") 
             try: 
                 df = yf.download(tick, start="2010-01-01", end="2026-02-01",auto_adjust=True) 
@@ -22,7 +22,7 @@ class DownloadData():
         print("\Download complete.")
 
     def download_gspc(self):
-        file_path = f"{self.output_path}/GSPC.csv"
+        file_path = f"{self._output_path}/GSPC.csv"
         print(" Downloading GSPC") 
         try: 
             df = yf.download("^GSPC", start="2010-01-01", end="2026-02-01",auto_adjust=True) 

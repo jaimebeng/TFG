@@ -7,13 +7,13 @@ class DataLoad():
     Supports loading a single ticker file or multiple ticker files by data type."""
 
     def __init__(self):
-        self.data_path = "/home/jaime/Documents/TFG/data/"
+        self._data_path = "/home/jaime/Documents/TFG/data/"
     
     def load_single_data(self,type,ticker):
         if type not in ["raw","clean","processed","features"]:
             raise ValueError("Type must be raw, clean, processed or features")
         
-        path = os.path.join(self.data_path, type, f"{ticker}.csv")
+        path = os.path.join(self._data_path, type, f"{ticker}.csv")
         df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
         print(f"{ticker}.csv loaded succesfully")
 
@@ -23,7 +23,7 @@ class DataLoad():
         if type not in ["raw","clean","processed","features"]:
             raise ValueError("Type must be raw, clean, processed or features")
 
-        directory = os.path.join(self.data_path, type)
+        directory = os.path.join(self._data_path, type)
         dfs = {}
         for filename in os.listdir(directory):
             full_path = os.path.join(directory, filename)

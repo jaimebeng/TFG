@@ -6,18 +6,14 @@ from numpy.lib.stride_tricks import sliding_window_view
 from scipy.stats import linregress
 
 
-
-
 class ProcessData():
 
     def __init__(self):
-        self.output_path = "/home/jaime/Documents/TFG/data/processed"
-        os.makedirs(self.output_path, exist_ok=True)
+        self._output_path = "/home/jaime/Documents/TFG/data/processed"
+        os.makedirs(self._output_path, exist_ok=True)
     
 
-    # auxiliary method for hurst exponent
-    @staticmethod
-    def hurst(close, window=63, n_values=None):
+    def _hurst(close, window=63, n_values=None):
         if n_values is None:
             n_values = [6, 8, 11, 15, 21]
         
@@ -67,7 +63,7 @@ class ProcessData():
 
         return pd.Series(H_array, index=close.index)
 
-    def process_ticker(self, df):
+    def _process_ticker(self, df):
         df["Returns"] = df["Close"].pct_change()
         df["Log Returns"] = np.log(df["Close"]).diff()
         df["Monthly Log Returns"] = df["Log Returns"].rolling(21).sum()
@@ -118,8 +114,8 @@ class ProcessData():
         df["Monthly Overnight Gap Ratio"] = ((df["Open"]-df["Close"].shift(1))/df["Close"].shift(1)).rolling(21).mean()
         df["Monthly Skewness"] = df["Log Returns"].rolling(21).skew()
         df["Monthly Kurtosis"] = df["Log Returns"].rolling(21).kurt()
-        df["Monthly Hurst Exponent"] = self.hurst(df['Close'], window=21, n_values=[6,8,11,15,21])
-        df["Quarterly Hurst Exponent"] = self.hurst(df['Close'], window=63, n_values=[6,8,11,15,21])
+        df["Monthly Hurst Exponent"] = self._hurst(df['Close'], window=21, n_values=[6,8,11,15,21])
+        df["Quarterly Hurst Exponent"] = self._hurst(df['Close'], window=63, n_values=[6,8,11,15,21])
         df["Quarterly Efficiency Ratio"] = df["Close"].diff(63).abs() / df["Close"].diff().abs().rolling(63).sum()
         df["Monthly Close-Location Value"] = (((2*df["Close"]) - df["High"] - df["Low"])/df["Daily Range"]).rolling(21).mean()
         df["Monthly Intraday Intensity"] = df["Monthly Close-Location Value"] * (1/df["Volume"])
@@ -134,10 +130,10 @@ class ProcessData():
             if filename != "GSPC.csv":
                 full_path = os.path.join(directory, filename)
                 df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
-                df = self.process_ticker(df)
+                df = self._process_ticker(df)
                 file = Path(filename)
                 ticker = file.stem
-                file_path = os.path.join(self.output_path, f"{ticker}.csv")
+                file_path = os.path.join(self._output_path, f"{ticker}.csv")
                 df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
                 print(f"{ticker}.csv processed succesfully")
 
