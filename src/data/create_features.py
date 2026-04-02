@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
 from pathlib import Path
 
 
@@ -45,12 +44,11 @@ class FeatureCreation():
     def create_features(self):
         directory = "/home/jaime/Documents/TFG/data/processed"
         for filename in os.listdir(directory):
-            if filename != "GSPC.csv":
-                full_path = os.path.join(directory, filename)
-                df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
-                df = self._features_engineering(df)
-                file = Path(filename)
-                ticker = file.stem
-                file_path = os.path.join(self._output_path, f"{ticker}.csv")
-                df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
-                print(f"{ticker}.csv feature engineered succesfully")
+            full_path = os.path.join(directory, filename)
+            df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
+            df = self._features_engineering(df)
+            file = Path(filename)
+            ticker = file.stem
+            file_path = os.path.join(self._output_path, f"{ticker}.csv")
+            df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
+            print(f"{ticker}.csv feature engineered succesfully")

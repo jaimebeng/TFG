@@ -20,8 +20,8 @@ class DataLoad():
         return df
     
     def load_multiple_data(self,type):
-        if type not in ["raw","clean","processed","features"]:
-            raise ValueError("Type must be raw, clean, processed or features")
+        if type not in ["raw","clean","processed","features","transformed"]:
+            raise ValueError("Type must be raw, clean, processed, features or transformed")
 
         directory = os.path.join(self._data_path, type)
         dfs = {}
