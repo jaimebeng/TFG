@@ -1,24 +1,18 @@
 import os
-import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import math
-from pandas.plotting import scatter_matrix
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-from sklearn.feature_selection import mutual_info_regression
-from numpy.lib.stride_tricks import sliding_window_view
-from scipy.stats import linregress
+
 from pathlib import Path
 
 
 class FeatureCreation():
 
     def __init__(self):
-        self.output_path = "/home/jaime/Documents/TFG/data/features"
-        os.makedirs(self.output_path, exist_ok=True)
+        self._output_path = "/home/jaime/Documents/TFG/data/features"
+        os.makedirs(self._output_path, exist_ok=True)
 
-    def features_engineering(self,df):
+    def _features_engineering(self,df):
         df.dropna(how='any', inplace=True)
         df = df.resample("BME").last()
         df["Target"] = df["Log Returns"].shift(-1)
@@ -50,9 +44,9 @@ class FeatureCreation():
             if filename != "GSPC.csv":
                 full_path = os.path.join(directory, filename)
                 df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
-                df = self.features_engineering(df)
+                df = self._features_engineering(df)
                 file = Path(filename)
                 ticker = file.stem
-                file_path = os.path.join(self.output_path, f"{ticker}.csv")
+                file_path = os.path.join(self._output_path, f"{ticker}.csv")
                 df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
                 print(f"{ticker}.csv feature engineered succesfully")

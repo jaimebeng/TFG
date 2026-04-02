@@ -10,8 +10,8 @@ class CleanData():
     """
 
     def __init__(self):
-        self.output_path = "/home/jaime/Documents/TFG/data/clean"
-        os.makedirs(self.output_path, exist_ok=True)
+        self._output_path = "/home/jaime/Documents/TFG/data/clean"
+        os.makedirs(self._output_path, exist_ok=True)
     
     def clean_data(self):
         directory = "/home/jaime/Documents/TFG/data/raw"
@@ -23,7 +23,7 @@ class CleanData():
             df.index = pd.to_datetime(df.index)
             file = Path(filename)
             ticker = file.stem
-            file_path = os.path.join(self.output_path, f"{ticker}.csv")
+            file_path = os.path.join(self._output_path, f"{ticker}.csv")
             df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
             print(f"{ticker}.csv cleaned succesfully")
 
