@@ -32,6 +32,9 @@ def winsorize_and_standardize(data, lower, upper):
     return out
 
 class PerStockTransformer(BaseEstimator, TransformerMixin):
+    """Applies per-stock winsorization and standardization for sklearn pipelines.
+    Independently processes each stock's features to handle outliers and normalize values.
+    """
     def __init__(self, stock_col='Ticker', winsor_limits=(0.01, 0.01)):
         self.stock_col = stock_col
         self.winsor_limits = winsor_limits
