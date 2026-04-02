@@ -7,6 +7,10 @@ from scipy.stats import linregress
 
 
 class ProcessData():
+    """Computes technical indicators and price-based features for stock data.
+    Generates returns, volatility, moving averages, RSI, and Hurst exponent metrics.
+    Saves in data/processed.
+    """
 
     def __init__(self):
         self._output_path = "/home/jaime/Documents/TFG/data/processed"

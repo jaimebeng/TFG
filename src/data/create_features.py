@@ -7,6 +7,10 @@ from pathlib import Path
 
 
 class FeatureCreation():
+    """Feature engineering and selection for stock data.
+    Applies resampling, drops underperforming features, and applies log transformations.
+    Saves in data/features.
+    """
 
     def __init__(self):
         self._output_path = "/home/jaime/Documents/TFG/data/features"
