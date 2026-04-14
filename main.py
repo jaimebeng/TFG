@@ -2,12 +2,14 @@ from src.data.download_data import DownloadData
 from src.data.clean_data import CleanData
 from src.data.process_data import ProcessData
 from src.data.create_features import FeatureCreation
+from src.data.transform_features import FeatureTransformation
 
 
 DOWNLOAD = False
 CLEAN = False
 PROCESS = False
-FEATURE = True
+FEATURE = False
+TRANSFORM = True
 tickers = ["AAPL", "MSFT", "NVDA", "GOOG", "META", "AVGO","AMZN", "HD", "MCD", 
            "NKE","JNJ", "UNH", "PFE", "ABBV","CAT", "BA", "UPS", "MMM","XOM", 
            "CVX", "SLB","JPM", "BAC", "GS", "MS","NEE", "LIN", "DOW","VZ", "CMCSA"
@@ -31,6 +33,10 @@ def main():
         fc = FeatureCreation()
         fc.create_features()
         print("Features engineered successfully.")
+    if TRANSFORM:
+        ft = FeatureTransformation()
+        ft.transform_features()
+        print("Features transformed successfully.")
 
 
 
