@@ -42,3 +42,18 @@ class DataLoad():
         print(f"Loaded transformed features from {path}")
         return X_cache
 
+    def load_aligned_targets(self):
+        path = os.path.join(self._data_path, 'transformed', 'y_aligned.joblib')
+        y_aligned = load(path)
+        print(f"Loaded algined targets from {path}")
+        return y_aligned
+
+    def load_months(self):
+        path = os.path.join(self._data_path, 'transformed', 'months.joblib')
+        y_aligned = load(path)
+        print(f"Loaded months from {path}")
+        return y_aligned
+
+
+
+
