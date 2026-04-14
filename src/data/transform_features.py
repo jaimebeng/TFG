@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 from src.data.data_loader import DataLoad
 from src.utils.transformer import PerStockTransformer
 from sklearn.base import clone
@@ -30,11 +31,13 @@ class FeatureTransformation():
         dfs = dl.load_multiple_data("features")
         df = self._dataset_joiner(dfs)
         X = df.drop(columns="Target")
+        months = np.sort(X.index.unique())
         X_cache = []
         transformer = PerStockTransformer()
-        for t in range(1, len(X)):
+        for month in months:
             trans = clone(transformer)
-            Xt = trans.fit_transform(X.iloc[:t+1].reset_index(drop=True))
+            X_slice = X[X.index <= month].reset_index(drop=True)
+            Xt = trans.fit_transform(X_slice)
             X_cache.append(Xt)
 
         cache_path = os.path.join(self._output_path, "X_cache.joblib")
