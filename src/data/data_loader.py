@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from pathlib import Path
+from joblib import load
 
 class DataLoad():
     """Utility class for loading project datasets from disk.
@@ -34,4 +35,8 @@ class DataLoad():
             print(f"{ticker}.csv loaded succesfully")
             
         return dfs
+    
+    def load_transformed_features(self):
+        X_cache = load(os.join(self._data_path,'transformed/X_cache.joblib'))
+        return X_cache
 
