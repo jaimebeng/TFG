@@ -2,6 +2,10 @@ import numpy as np
 from joblib import load
 
 class Dataset:
+    """Loads cached transformed data and returns the correct cutoff slice.
+    Provides quick access to the feature/target pair for a given date.
+    """
+
     def __init__(self):
         self._path = "/home/jaime/Documents/TFG/data/transformed"
         self.X_cache = load(f"{self._pathpath}/X_cache.joblib")
