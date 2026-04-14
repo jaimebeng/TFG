@@ -37,6 +37,8 @@ class DataLoad():
         return dfs
     
     def load_transformed_features(self):
-        X_cache = load(os.join(self._data_path,'transformed/X_cache.joblib'))
+        path = os.path.join(self._data_path, 'transformed', 'X_cache.joblib')
+        X_cache = load(path)
+        print(f"Loaded transformed features from {path}")
         return X_cache
 
