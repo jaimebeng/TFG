@@ -3,7 +3,7 @@ from joblib import load
 
 class TransformedDataset():
     """Loads cached transformed data and returns the correct cutoff slice.
-    Provides quick access to the feature/target pair for a given date.
+    Provides quick access to the features/targets pair up to a given date.
     """
 
     def __init__(self):
@@ -25,7 +25,7 @@ class TransformedDataset():
     def get(self, cutoff):
         idx = self._get_index(cutoff)
 
-        X = self.X_cache[idx]
-        y = self.y[:len(X)]
+        X = self.X_cache[:idx+1]
+        y = self.y[:len(self.X_cache[idx])]
 
         return X, y
