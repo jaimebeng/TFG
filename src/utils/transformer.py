@@ -43,22 +43,22 @@ class PerStockTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        X = X.reset_index(drop=True)
 
-        features = [c for c in X.columns if c != self.stock_col]
-        X_arr = X[features].to_numpy(dtype=np.float64)
+        X_res = X.reset_index(drop=True)
+
+        features = [c for c in X_res.columns if c != self.stock_col]
+        X_arr = X_res[features].to_numpy(dtype=np.float64)
         transformed = np.empty_like(X_arr, dtype=np.float64)
 
         lower, upper = self.winsor_limits
 
-        groups = X.groupby(self.stock_col).groups
+        groups = X_res.groupby(self.stock_col).groups
 
         for _, idx in groups.items():
             idx = np.array(list(idx))
             data = X_arr[idx, :]
 
-            transformed[idx, :] = winsorize_and_standardize(
-                data, lower, upper
-            )
+            transformed[idx, :] = winsorize_and_standardize(data, lower, upper)
+
 
         return transformed
