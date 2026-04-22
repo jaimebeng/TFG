@@ -2,8 +2,6 @@
 # ----------------------
 # Personal
 # ----------------------
-.zencoder/
-.zenflow/
 path.txt
 structure.txt
 notes.txt
@@ -25,6 +23,7 @@ __pycache__/
 venv/
 env/
 ENV/
+.vscode/
 
 # ----------------------
 # Environment variables
