@@ -18,20 +18,20 @@ class FeatureCreation():
     def _features_engineering(self,df):
         df.dropna(how='any', inplace=True)
         df = df.resample("BME").last()
-        df["Target"] = df["Log Returns"].shift(-1)
+        df["Target"] = (np.log(df["Close"] / df["Close"].shift(1))).shift(-1)
         df.dropna(subset=["Target"], inplace=True)
-        columns_to_drop = [
-            "Close", "High", "Low", "Open", "MA20", "MA60", "True Range", "Daily Range",
-            "Daily Candle Body", "Price Difference", "Gains", "Losses", "Average Gains",
-            "Average Losses", "RS", "Returns", "Monthly Average Intraday Range", "Monthly Average True Range",
-            "Monthly Average Candle Body", "Monthly Average Percentage Intraday Range",
-            "VMA60", "Parkinson Volatility", "Quarterly Volatility", "Distance from MA20",
-            "VMA20", "Distance from MA60", "Volume Flow Ratio", "Relative Volume",
-            "14-day Average True Range", "Body Up", "Body Down", "Monthly Conviction Ratio",
-            "Monthly Volatility", "Monthly Parkinson Volatility", "Monthly Normalized Intraday Intensity",
-            "Normalized Average True Range", "Monthly Hurst Exponent","Quarterly Hurst Exponent", "Monthly Overnight Gap Ratio",
-            "Monthly Close-Location Value", "5-day RSI Slope"
-        ]
+        columns_to_drop = ['Close', 'High', 'Low', 'Open',
+                           'MA20', 'MA60', 'True Range', 'Daily Range',
+                           'Daily Candle Body', 'Price Difference', 'Gains', 'Losses',
+                           'Average Gains', 'Average Losses', 'RS', 'Returns',
+                           'Monthly Average Intraday Range', 'Monthly Average True Range', 
+                           'Monthly Average Candle Body', 'Monthly Average Percentage Intraday Range',
+                           'VMA60', 'Parkinson Volatility', 'Quarterly Volatility', 'Distance from MA20','Volume', 
+                           'Distance from MA60', 'Monthly Log Returns', 'Volume Flow Ratio','10-day Efficiency Ratio',
+                           '14-day Average True Range', 'Monthly Volatility', 'Monthly Rogers-Satchell Volatility',
+                           'Monthly Normalized Intraday Intensity', 'Monthly Parkinson Volatility', 'Body Down', 
+                           'Quarterly Hurst Exponent', '5-day RSI Slope', 'Monthly Hurst Exponent']
+
         df = df.drop(columns=columns_to_drop)
         skewed = df.skew() >= 1
         non_negative = (df >= 0).all()
