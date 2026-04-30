@@ -17,7 +17,7 @@ class ProcessData():
         os.makedirs(self._output_path, exist_ok=True)
     
 
-    def _hurst(close, window=63, n_values=None):
+    def _hurst(self, close, window=63, n_values=None):
         if n_values is None:
             n_values = [6, 8, 11, 15, 21]
         
