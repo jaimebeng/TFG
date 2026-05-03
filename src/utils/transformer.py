@@ -1,42 +1,14 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from numba import njit
+from sklearn.preprocessing import StandardScaler
+from scipy.stats.mstats import winsorize
 import numpy as np
 
 
-@njit
-def winsorize_and_standardize(data, lower, upper):
-    n, m = data.shape
-    out = np.empty_like(data)
-
-    for j in range(m):
-        col = data[:, j].copy()
-        sorted_col = np.sort(col)
-
-        low_val = sorted_col[int(n * lower)]
-        high_val = sorted_col[int(n * (1 - upper)) - 1]
-
-        for i in range(n):
-            if col[i] < low_val:
-                col[i] = low_val
-            elif col[i] > high_val:
-                col[i] = high_val
-
-        mean = col.mean()
-        std = col.std()
-        if std == 0:
-            std = 1e-8
-
-        for i in range(n):
-            out[i, j] = (col[i] - mean) / std
-
-    return out
-
-class PerStockTransformer(BaseEstimator, TransformerMixin):
-    """Applies per-stock winsorization and standardization for sklearn pipelines.
-    Independently processes each stock's features to handle outliers and normalize values.
+class StockTransformer(BaseEstimator, TransformerMixin):
+    """Applies winsorization and standardization to the whole group of stocks.
+    Normalizes each feature across all data to handle outliers and standardize values globally.
     """
-    def __init__(self, stock_col='Ticker', winsor_limits=(0.01, 0.01)):
-        self.stock_col = stock_col
+    def __init__(self, winsor_limits=(0.01, 0.01)):
         self.winsor_limits = winsor_limits
 
     def fit(self, X, y=None):
@@ -44,21 +16,12 @@ class PerStockTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
 
-        X_res = X.reset_index(drop=True)
+        X = X.copy()
 
-        features = [c for c in X_res.columns if c != self.stock_col]
-        X_arr = X_res[features].to_numpy(dtype=np.float64)
-        transformed = np.empty_like(X_arr, dtype=np.float64)
+        for col in X.columns:
+            X[col] = np.asarray(winsorize(X[col].values, limits=self.winsor_limits), dtype=float)
 
-        lower, upper = self.winsor_limits
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
 
-        groups = X_res.groupby(self.stock_col).groups
-
-        for _, idx in groups.items():
-            idx = np.array(list(idx))
-            data = X_arr[idx, :]
-
-            transformed[idx, :] = winsorize_and_standardize(data, lower, upper)
-
-
-        return transformed
+        return X_scaled
