@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 from src.data.data_loader import DataLoad
-from src.utils.transformer import PerStockTransformer
+from src.utils.transformer import StockTransformer
 from sklearn.base import clone
 from joblib import dump
 
@@ -17,24 +17,16 @@ class FeatureTransformation():
         self._output_path = "/home/jaime/Documents/TFG/data/transformed"
         os.makedirs(self._output_path, exist_ok=True)
 
-    def _dataset_joiner(self,dfs):
-        for ticker, df_stock in dfs.items():
-            df_stock['Ticker'] = ticker
-
-        df_all = pd.concat(dfs.values()).sort_index()
-
-        return df_all
-
 
     def transform_features(self):
         dl = DataLoad()
         dfs = dl.load_multiple_data("features")
-        df = self._dataset_joiner(dfs)
+        df = pd.concat(dfs.values()).sort_index()
         X = df.drop(columns="Target")
         y = df["Target"].reset_index(drop=True)
         months = np.sort(X.index.unique())
         X_cache = []
-        transformer = PerStockTransformer()
+        transformer = StockTransformer()
         for month in months:
             trans = clone(transformer)
             X_slice = X[X.index <= month].reset_index(drop=True)
