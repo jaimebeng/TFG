@@ -33,7 +33,7 @@ class FeatureTransformation():
             Xt = trans.fit_transform(X_slice)
             X_cache.append(Xt)
         dump(X_cache, os.path.join(self._output_path, "X_cache.joblib"))
-        dump(y, os.path.join(self._output_path, "y_aligned.joblib"))
+        dump(y.to_numpy(copy=True), os.path.join(self._output_path, "y_aligned.joblib"))        
         dump(months, os.path.join(self._output_path, "months.joblib"))
 
         
