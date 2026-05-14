@@ -3,13 +3,20 @@ from src.data.clean_data import CleanData
 from src.data.process_data import ProcessData
 from src.data.create_features import FeatureCreation
 from src.data.transform_features import FeatureTransformation
+from src.data.hpt_dataset import HPTDataset
+import numpy as np
+import torch
+
+np.random.seed(42)
+torch.manual_seed(42)
 
 
 DOWNLOAD = False
 CLEAN = False
 PROCESS = False
 FEATURE = False
-TRANSFORM = True
+TRANSFORM = False
+DATASET = True
 tickers = ["AAPL", "MSFT", "NVDA", "GOOG", "META", "AVGO","AMZN", "HD", "MCD", 
            "NKE","JNJ", "UNH", "PFE", "ABBV","CAT", "BA", "UPS", "MMM","XOM", 
            "CVX", "SLB","JPM", "BAC", "GS", "MS","NEE", "LIN", "DOW","VZ", "CMCSA"
@@ -37,6 +44,9 @@ def main():
         ft = FeatureTransformation()
         ft.transform_features()
         print("Features transformed successfully.")
+    if DATASET:
+        hpt = HPTDataset()
+        hpt.create_ds()
 
 
 

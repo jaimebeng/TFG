@@ -11,8 +11,8 @@ class DataLoad():
         self._data_path = "/home/jaime/Documents/TFG/data/"
     
     def load_single_data(self,type,ticker):
-        if type not in ["raw","clean","processed","features"]:
-            raise ValueError("Type must be raw, clean, processed or features")
+        if type not in ["raw","clean","processed","features","transformed"]:
+            raise ValueError("Type must be raw, clean, processed, features or transformed")
         
         path = os.path.join(self._data_path, type, f"{ticker}.csv")
         df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
