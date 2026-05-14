@@ -66,8 +66,14 @@ class ProcessData():
         H_array[start_idx:start_idx + len(H_list)] = H_list
 
         return pd.Series(H_array, index=close.index)
+    
+    def _calculate_k_ratio(self,series):
+        x = np.arange(len(series))
+        y = series.cumsum()
+        slope, _, _, _, std_err = linregress(x, y)
+        return slope / std_err if std_err != 0 else 0
 
-    def _process_ticker(self, df):
+    def _process_ticker(self, df, gspc):
         df["Returns"] = df["Close"].pct_change()
         df["Log Returns"] = np.log(df["Close"]).diff()
         df["Monthly Log Returns"] = df["Log Returns"].rolling(21).sum()
@@ -115,26 +121,85 @@ class ProcessData():
         df["Monthly Parkinson Volatility"] = np.sqrt((1 / (4 * 21 * np.log(2))) * ((np.log(df["High"] / df["Low"])) ** 2).rolling(21).sum())
         df["Monthly Rogers-Satchell Volatility"] = np.sqrt(((np.log(df["High"]/df["Close"]) * np.log(df["High"]/df["Open"])) + (np.log(df["Low"]/df["Close"]) * np.log(df["Low"]/df["Open"]))).rolling(21).mean())
         df["Volatility of Volatility"] = df["Parkinson Volatility"].rolling(21).std()
-        df["Monthly Overnight Gap Ratio"] = ((df["Open"]-df["Close"].shift(1))/df["Close"].shift(1)).rolling(21).mean()
+        df["Downside Volatility"] = df["Log Returns"].clip(upper=0).rolling(21).std()
+        df["Upside Volatility"] = df["Log Returns"].clip(lower=0).rolling(21).std()
+        df["Volatility Term Structure Slope"] = df["Monthly Volatility"] / df["Semi-annual Volatility"]
+        df["Volatility Breakout"] = df["Monthly Volatility"] / df["Monthly Volatility"].rolling(63).mean()
+        df["Volatility Regime Change"] = df["Monthly Volatility"].diff(21)
         df["Monthly Skewness"] = df["Log Returns"].rolling(21).skew()
         df["Monthly Kurtosis"] = df["Log Returns"].rolling(21).kurt()
+        df["Return Autocorr 5D"] = df["Log Returns"].rolling(21).apply(lambda x: x.autocorr(lag=1))
+        df["Return Autocorr 10D"] = df["Log Returns"].rolling(21).apply(lambda x: x.autocorr(lag=2))
+        df["Entropy of Returns"] = df["Log Returns"].rolling(21).apply(lambda x: -np.sum(np.histogram(x, bins=10, density=True)[0] * np.log(np.histogram(x, bins=10, density=True)[0] + 1e-8)))
+        df["Monthly Return Momentum"] = df["Log Returns"].rolling(21).sum()
+        df["Monthly Return Acceleration"] = df["Monthly Return Momentum"].diff()
+        df["Trend Strength"] = abs(df["MA20/MA60"] - 1)
+        df["High Low Trend Position"] = (df["Close"] - df["Low"].rolling(21).min()) /(df["High"].rolling(21).max() - df["Low"].rolling(21).min())
+        df["Quarterly Efficiency Ratio"] = df["Close"].diff(63).abs() / df["Close"].diff().abs().rolling(63).sum()
         df["Monthly Hurst Exponent"] = self._hurst(df['Close'], window=21, n_values=[6,8,11,15,21])
         df["Quarterly Hurst Exponent"] = self._hurst(df['Close'], window=63, n_values=[6,8,11,15,21])
-        df["Quarterly Efficiency Ratio"] = df["Close"].diff(63).abs() / df["Close"].diff().abs().rolling(63).sum()
+        df["5-day RSI Slope"] = df['RSI'].rolling(5).apply(lambda y: linregress(range(5), y)[0], raw=True)
+        df["ADX Proxy"] = (abs(df["High"].diff()) + abs(df["Low"].diff())).rolling(21).mean() / df["True Range"].rolling(21).mean()
+        df["Gap Up"] = (df["Open"] - df["Close"].shift(1)) / df["Close"].shift(1)
+        df["Gap Direction"] = np.sign(df["Gap Up"])
+        df["Gap Persistence"] = df["Gap Up"].rolling(5).mean()
+        df["Gap vs Intraday Move"] = df["Gap Up"] / (df["High"] - df["Low"])
         df["Monthly Close-Location Value"] = (((2*df["Close"]) - df["High"] - df["Low"])/df["Daily Range"]).rolling(21).mean()
+        df["Zscore Price"] = (df["Close"] - df["Close"].rolling(21).mean()) / df["Close"].rolling(21).std()
+        df["Mean Reversion Pressure"] = -df["Zscore Price"] * df["RSI"]
+        df["Up Days Ratio"] = (df["Log Returns"] > 0).rolling(21).mean()
+        df["Dollar Volume"] = df["Close"] * df["Volume"]
+        df["Volume Weighted Return"] = df["Log Returns"] * df["Volume"]
+        df["Signed Volume Pressure"] = np.sign(df["Log Returns"]) * df["Volume"]
+        df["Cumulative Volume Trend"] = df["Volume"].rolling(21).sum() / df["Volume"].rolling(63).sum()
+        df["Price Volume Correlation"] = df["Log Returns"].rolling(21).corr(df["Volume"])
         df["Monthly Intraday Intensity"] = df["Monthly Close-Location Value"] * (1/df["Volume"])
         df["Monthly Normalized Intraday Intensity"] = df["Monthly Close-Location Value"] * (df["Volume"]/df["Volume"].rolling(21).mean())
-        df["5-day RSI Slope"] = df['RSI'].rolling(5).apply(lambda y: linregress(range(5), y)[0], raw=True)
+        df["Zscore Volume"] = (df["Volume"] - df["Volume"].rolling(21).mean()) / df["Volume"].rolling(21).std()
+        df["21 Day Beta"] = df["Log Returns"].rolling(21).cov(gspc["Log Returns"]) / gspc["21 Day Var"]
+        df["63 Day Beta"] = df["Log Returns"].rolling(63).cov(gspc["Log Returns"]) / gspc["63 Day Var"]
+        df["126 Day Beta"] = df["Log Returns"].rolling(126).cov(gspc["Log Returns"]) / gspc["126 Day Var"]
+        df["MA 20 Beta"] = df["21 Day Beta"].rolling(21).mean()
+        df["MA 63 Beta"] = df["63 Day Beta"].rolling(63).mean()
+        df["MA 126 Beta"] = df["126 Day Beta"].rolling(126).mean()
+        df["Daily Alpha"] = df["Log Returns"] - (df["21 Day Beta"] * gspc["Log Returns"])
+        df["Monthly Alpha"] = df["Daily Alpha"].rolling(21).sum()
+        df["Quarterly Alpha"] = df["Daily Alpha"].rolling(63).sum()
+        df["Semi-annual Alpha"] = df["Daily Alpha"].rolling(126).sum()
+        df["MA20 Alpha"] = df["Daily Alpha"].rolling(20).mean()
+        df["MA60 Alpha"] = df["Daily Alpha"].rolling(60).mean()
+        df["Monthly Alpha Volatility"] = df["Daily Alpha"].rolling(21).std()
+        df["Quarterly Alpha Volatility"] = df["Daily Alpha"].rolling(63).std()
+        df["Semi-annual Alpha Volatility"] = df["Daily Alpha"].rolling(126).std()
+        df["Amihud_Illiquidity"] = df["Log Returns"].abs() / (df["Dollar Volume"] + 1e-8)
+        df["Amihud_Illiquidity_21d"] = df["Amihud_Illiquidity"].rolling(21).mean()
+        df["K_Ratio_21d"] = df["Log Returns"].rolling(21).apply(self._calculate_k_ratio, raw=True)
+        range_daily = (df["High"] - df["Low"]) + 1e-8
+        df["Volume_Imbalance"] = ((df["Close"] - df["Low"]) - (df["High"] - df["Close"])) / range_daily
+        df["VPIN_Proxy"] = df["Volume_Imbalance"] * df["Volume"]
+        df["VPIN_Signal_21d"] = df["VPIN_Proxy"].rolling(21).mean()
+        
+        df = df.copy()
 
         return df
 
+    def _process_gspc(self,gspc):
+        gspc["Log Returns"] = np.log(gspc["Close"]).diff()
+        gspc["21 Day Var"] = gspc["Log Returns"].rolling(21).var()
+        gspc["63 Day Var"] = gspc["Log Returns"].rolling(63).var()
+        gspc["126 Day Var"] = gspc["Log Returns"].rolling(126).var()
+
+        return gspc
+
     def process_data(self):
         directory = "/home/jaime/Documents/TFG/data/clean"
+        gspc = pd.read_csv(os.path.join(directory, "GSPC.csv"), header=0, index_col=0, parse_dates=True)
+        gspc = self._process_gspc(gspc)
         for filename in os.listdir(directory):
             if filename != "GSPC.csv":
                 full_path = os.path.join(directory, filename)
                 df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
-                df = self._process_ticker(df)
+                df = self._process_ticker(df,gspc)
                 file = Path(filename)
                 ticker = file.stem
                 file_path = os.path.join(self._output_path, f"{ticker}.csv")

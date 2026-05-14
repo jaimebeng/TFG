@@ -8,9 +8,8 @@ from joblib import dump
 
 
 class FeatureTransformation():
-    """Builds and stores rolling transformed feature matrices.
-    Applies per-stock transformation incrementally to avoid recomputing for each model.
-    Saves in data/transformed.
+    """Loads feature data, applies cross-sectional-level transformations by date, and
+    writes the transformed dataset to data/transformed/Dataset.csv.
     """
 
     def __init__(self):
@@ -22,20 +21,11 @@ class FeatureTransformation():
         dl = DataLoad()
         dfs = dl.load_multiple_data("features")
         df = pd.concat(dfs.values()).sort_index()
-        X = df.drop(columns="Target")
-        y = df["Target"].reset_index(drop=True)
-        months = np.sort(X.index.unique())
-        X_cache = []
-        transformer = StockTransformer()
-        for month in months:
-            trans = clone(transformer)
-            X_slice = X[X.index <= month].reset_index(drop=True)
-            Xt = trans.fit_transform(X_slice)
-            X_cache.append(Xt)
-        dump(X_cache, os.path.join(self._output_path, "X_cache.joblib"))
-        dump(y.to_numpy(copy=True), os.path.join(self._output_path, "y_aligned.joblib"))        
-        dump(months, os.path.join(self._output_path, "months.joblib"))
-
-        
-
+        features = [c for c in df.columns if c not in ["Ticker","Target"]]
+        trans = StockTransformer()
+        df[features] = df.groupby(df.index, group_keys=False)[features].apply(trans.transform_x)
+        df["Target"] = df.groupby(df.index, group_keys=False)["Target"].apply(trans.transform_y)
+        full_path = os.path.join(self._output_path, "Dataset.csv")
+        df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
+        print("Dataset transformed succesfully")
     
