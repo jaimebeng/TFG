@@ -21,22 +21,22 @@ class FeatureCreation():
         df = df.resample("BME").last()
         df["Target"] = (np.log(df["Close"] / df["Close"].shift(1))).shift(-1)
         df.dropna(subset=["Target"], inplace=True)
-        features = ["High", "Low", "Open", "Close", "Returns",
-                    "MA20", "Normalized Average True Range", "Daily Range", "14-day Average True Range", "Monthly Average True Range",
-                    "Monthly Average Intraday Range", "Parkinson Volatility", "Quarterly Volatility", "Monthly Average Candle Body", "VMA20",
-                    "Volume", "RSI", "Zscore Price", "Mean Reversion Pressure", "Monthly Parkinson Volatility",
-                    "Monthly Rogers-Satchell Volatility", "Volatility Breakout", "Monthly Normalized Intraday Intensity", "Relative Volume", "Quarterly Alpha",
-                    "Quarterly Log Returns", "Semi-annual Alpha", "MA20 Alpha", "MA 63 Beta", "Semi-annual Volatility",
-                    "Quarterly Alpha Volatility",
-                    "Distance from MA60", "Daily Candle Body", "MA60", "True Range", "Monthly Average Percentage Intraday Range",
-                    "Upside Volatility", "Downside Volatility", "126 Day Beta",
-                    "Distance from MA20", "Volatility Ratio", "Monthly Log Returns", "Monthly Volatility", "Log Returns",
-                    "Volume Flow Ratio", "Losses", "Monthly Efficiency Ratio", "Volatility Regime Change", "Quarterly Efficiency Ratio",
-                    "Monthly Return Momentum", "Monthly Skewness", "Monthly Kurtosis", "Gap Direction", "Quarterly Hurst Exponent",
-                    "5-day RSI Slope", "Signed Volume Pressure", "MA20/MA60", "Price Difference", "Gains",
-                    "Entropy of Returns", "ADX Proxy", "Monthly Close-Location Value", "Gap vs Intraday Move", "High Low Trend Position",
-                    "Up Days Ratio", "Zscore Volume", "Cumulative Volume Trend", "Daily Alpha", "Monthly Alpha","K_Ratio_21d", "VPIN_Proxy"
-                    ]
+        features = [
+            'High', 'Low', 'Open', 'Returns', 'MA60',
+            'Close', 'Normalized Average True Range', 'Percentage Intraday Range', 'Daily Range', 'True Range',
+            'Monthly Average True Range', 'Monthly Average Intraday Range', 'Quarterly Volatility', 'Monthly Average Candle Body', 'Average Gains',
+            'Average Losses', '14-day Average True Range', 'VMA20', 'Volume', 'RS',
+            "Zscore Price", "Mean Reversion Pressure", "Monthly Parkinson Volatility", "Monthly Rogers-Satchell Volatility", "Entropy of Returns",
+            "Cumulative Volume Trend", "Volatility Breakout", "Monthly Normalized Intraday Intensity", "Zscore Volume", "MA20 Alpha",
+            "Quarterly Alpha", "Semi-annual Alpha", "126 Day Beta", "Semi-annual Volatility", "Quarterly Alpha Volatility",
+            "Distance from MA60", "Daily Candle Body", "Monthly Volatility", "Upside Volatility", "Monthly Average Percentage Intraday Range",
+            "RSI", "Downside Volatility", "Monthly Log Returns", "Quarterly Log Returns", "Volatility Ratio",
+            "Log Returns", "MA20/MA60", "Losses", "Volatility Term Structure Slope", "Return Autocorr 10D",
+            "Trend Strength", "Monthly Return Momentum", "Monthly Kurtosis", "Gap Up", "Up Days Ratio",
+            "Gap vs Intraday Move", "Volume Weighted Return", "Price Volume Correlation", "Price Difference", "Quarterly Hurst Exponent",
+            "Volatility Regime Change", "Quarterly Efficiency Ratio", "21 Day Beta", "Signed Volume Pressure", "Monthly Close-Location Value",
+            "Daily Alpha", "K_Ratio_21d", "Volume_Imbalance", "VPIN_Signal_21d"
+        ]
         df = df.drop(columns=features)
 
         df = df.copy()
