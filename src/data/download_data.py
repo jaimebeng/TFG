@@ -6,7 +6,7 @@ class DownloadData():
 
     def __init__(self,):
         self._output_path = "/home/jaime/Documents/TFG/data/raw"
-        os.makedirs(self.output_path, exist_ok=True)
+        os.makedirs(self._output_path, exist_ok=True)
 
     def download_tick_data(self,tickers):
 

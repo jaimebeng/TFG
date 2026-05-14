@@ -27,5 +27,5 @@ class FeatureTransformation():
         df["Target"] = df.groupby(df.index, group_keys=False)["Target"].apply(trans.transform_y)
         full_path = os.path.join(self._output_path, "Dataset.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
-        print("Dataset transformed succesfully")
+        print("Dataset created succesfully")
     
