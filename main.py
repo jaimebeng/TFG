@@ -3,7 +3,7 @@ from src.data.clean_data import CleanData
 from src.data.process_data import ProcessData
 from src.data.create_features import FeatureCreation
 from src.data.transform_features import FeatureTransformation
-from src.data.hpt_dataset import HPTDataset
+from src.data.final_datasets import Datasets
 import numpy as np
 import torch
 
@@ -15,12 +15,10 @@ DOWNLOAD = False
 CLEAN = False
 PROCESS = False
 FEATURE = False
-TRANSFORM = False
 DATASET = True
-tickers = ["AAPL", "MSFT", "NVDA", "GOOG", "META", "AVGO","AMZN", "HD", "MCD", 
-           "NKE","JNJ", "UNH", "PFE", "ABBV","CAT", "BA", "UPS", "MMM","XOM", 
-           "CVX", "SLB","JPM", "BAC", "GS", "MS","NEE", "LIN", "DOW","VZ", "CMCSA"
-]
+tickers = ["AAPL", "MSFT", "NVDA", "GOOG", "ORCL", "AVGO","AMZN", "HD", "MCD", 
+           "NKE","JNJ", "UNH", "PFE", "MRK","CAT", "BA", "UPS", "MMM","XOM", 
+           "CVX", "SLB","JPM", "BAC", "GS", "MS","NEE", "LIN", "SHW","VZ", "CMCSA"]
 
 def main():
     if DOWNLOAD:
@@ -40,13 +38,12 @@ def main():
         fc = FeatureCreation()
         fc.create_features()
         print("Features engineered successfully.")
-    if TRANSFORM:
-        ft = FeatureTransformation()
-        ft.transform_features()
-        print("Features transformed successfully.")
     if DATASET:
-        hpt = HPTDataset()
-        hpt.create_ds()
+        ds = Datasets()
+        ds.create_backtest_dataset()
+        ds.create_hpt_dataset()
+        ds.create_optimisation_dataset()
+        print("Datasets created successfully.")
 
 
 
