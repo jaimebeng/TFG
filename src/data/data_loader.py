@@ -37,7 +37,7 @@ class DataLoad():
             
         return dfs
     
-    def load_backtest(self,type, cutoff = None):
+    def load_dataset(self,type, cutoff = None):
         if type not in ["backtest", "hpt", "optimisation"]:
             raise ValueError("Type must be backtest, hpt or optimisation")
         if type == "backtest":
@@ -46,6 +46,8 @@ class DataLoad():
             print("backtest.csv loaded succesfully")
             return df
         elif type == "hpt":
+            if cutoff == None:
+                raise ValueError("HPT dataset needs cutoff data")
             path = os.path.join(self._data_path, "datasets")
             X_cache = load(f"{path}/X_cache.joblib")
             y_cache = load(f"{path}/y_cache.joblib")
