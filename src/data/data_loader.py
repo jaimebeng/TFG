@@ -55,7 +55,7 @@ class DataLoad():
             X, y = self._get(X_cache, y_cache, months, cutoff)
             return X, y
         else:
-            path = os.path.join(self._data_path, "optimisation", "backtest.csv")
+            path = os.path.join(self._data_path, "datasets", "optimisation.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
             print("optimisation.csv loaded succesfully")
             return df
