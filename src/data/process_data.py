@@ -184,6 +184,7 @@ class ProcessData():
         return df
 
     def _process_gspc(self,gspc):
+        gspc["Returns"] = gspc["Close"].pct_change()
         gspc["Log Returns"] = np.log(gspc["Close"]).diff()
         gspc["21 Day Var"] = gspc["Log Returns"].rolling(21).var()
         gspc["63 Day Var"] = gspc["Log Returns"].rolling(63).var()
@@ -195,6 +196,9 @@ class ProcessData():
         directory = "/home/jaime/Documents/TFG/data/clean"
         gspc = pd.read_csv(os.path.join(directory, "GSPC.csv"), header=0, index_col=0, parse_dates=True)
         gspc = self._process_gspc(gspc)
+        file_path = os.path.join(self._output_path, "GSPC.csv")
+        gspc.to_csv(file_path, index=True, date_format="%Y-%m-%d")
+        print("GSPC.csv processed succesfully")
         for filename in os.listdir(directory):
             if filename != "GSPC.csv":
                 full_path = os.path.join(directory, filename)
