@@ -46,11 +46,12 @@ class FeatureCreation():
     def create_features(self):
         directory = "/home/jaime/Documents/TFG/data/processed"
         for filename in os.listdir(directory):
-            full_path = os.path.join(directory, filename)
-            df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
-            file = Path(filename)
-            ticker = file.stem
-            df = self._features_engineering(df,ticker)
-            file_path = os.path.join(self._output_path, f"{ticker}.csv")
-            df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
-            print(f"{ticker}.csv feature engineered succesfully")
+            if filename != "GSPC.csv":
+                full_path = os.path.join(directory, filename)
+                df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
+                file = Path(filename)
+                ticker = file.stem
+                df = self._features_engineering(df,ticker)
+                file_path = os.path.join(self._output_path, f"{ticker}.csv")
+                df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
+                print(f"{ticker}.csv feature engineered succesfully")
