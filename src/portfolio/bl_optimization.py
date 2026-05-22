@@ -5,12 +5,10 @@ from scipy.stats import norm
 import matplotlib.pyplot as plt
 import cvxpy as cp
 
-class Black_Litterman_Optimisation():
+class Black_Litterman():
 
     def __init__(self,tickers, delta = 2.5, gamma = 2.5, tau = 0.025, n_assets = 30):
         self._tickers = tickers
-        self._dl = DataLoad()
-        self._dataset = self._dl.load_dataset("optimisation")
         self._delta = delta
         self._gamma = gamma
         self._tau = tau
@@ -25,8 +23,8 @@ class Black_Litterman_Optimisation():
 
         return results
     
-    def _calculate_sigma(self, date, verbose = 0):
-        df = self._dataset[self._dataset.index <= date].tail(504).copy()
+    def _calculate_sigma(self, df, verbose = 0):
+        df = df.copy()
         vols = df.std().values
         D = np.diag(vols)
 
@@ -99,9 +97,10 @@ class Black_Litterman_Optimisation():
 
         return expected_returns
     
-    def optimize_portfolio(self, date, confidence_factor, verbose = 0):
+    def optimize_portfolio(self, df, confidence_factor, verbose = 0):
+        df.drop(columns="GSPC", inplace=True)
         results = self._calculate_zscores()
-        sigma, vols = self._calculate_sigma(date, verbose)
+        sigma, vols = self._calculate_sigma(df, verbose)
         pi = self._calculate_pi
         Q = self._calculate_Q(vols, results["Z-Score"])
         omega = self._calculate_omega(confidence_factor, sigma)

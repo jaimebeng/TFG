@@ -42,7 +42,7 @@ def main():
         ds = Datasets()
         ds.create_backtest_dataset()
         ds.create_hpt_dataset()
-        ds.create_optimisation_dataset()
+        ds.create_returns_dataset()
         print("Datasets created successfully.")
 
 
