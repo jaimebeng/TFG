@@ -13,17 +13,18 @@ class Datasets():
     def __init__(self):
         self._path = "/home/jaime/Documents/TFG/data/datasets"
         os.makedirs(self._path, exist_ok=True)
-        self.dl = DataLoad()
+        self._dl = DataLoad()
     
     def create_backtest_dataset(self):
+        dfs = self._dl.load_multiple_data("features")
         ft = FeatureTransformation()
-        df = ft.transform_features()
+        df = ft.transform_features(dfs)
         full_path = os.path.join(self._path, "backtest.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Backtest dataset created succesfully")
 
     def create_hpt_dataset(self):
-        df = self.dl.load_backtest("backtest")
+        df = self._dl.load_dataset("backtest")
         X = df.drop(columns=["Ticker","Target"])
         y = df["Target"].to_numpy()
         months = np.sort(X.index.unique())
@@ -36,13 +37,13 @@ class Datasets():
         dump(months, os.path.join(self._path, "months.joblib"))
         print("Hyperparameter tuning dataset created")
 
-    def create_optimisation_dataset(self):
-        dfs = self.dl.load_multiple_data("processed")
+    def create_returns_dataset(self):
+        dfs = self._dl.load_multiple_data("processed")
         for tick in dfs.keys():
-            dfs[tick] = dfs[tick][["Log Returns"]].copy()
-            dfs[tick].rename(columns={"Log Returns": tick},inplace=True)
+            dfs[tick] = dfs[tick][["Returns"]].copy()
+            dfs[tick].rename(columns={"Returns": tick},inplace=True)
             dfs[tick].dropna(how='any', inplace=True)
         df = pd.concat(dfs.values(),axis=1).sort_index()
-        full_path = os.path.join(self._path, "optimisation.csv")
+        full_path = os.path.join(self._path, "returns.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
-        print("Optimisation dataset created succesfully")
+        print("Returns dataset created succesfully")

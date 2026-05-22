@@ -11,9 +11,7 @@ class FeatureTransformation():
     def __init__(self):
         pass
 
-    def transform_features(self):
-        dl = DataLoad()
-        dfs = dl.load_multiple_data("features")
+    def transform_features(self, dfs):
         df = pd.concat(dfs.values()).sort_index()
         features = [c for c in df.columns if c not in ["Ticker","Target"]]
         trans = StockTransformer()

@@ -38,8 +38,8 @@ class DataLoad():
         return dfs
     
     def load_dataset(self,type, cutoff = None):
-        if type not in ["backtest", "hpt", "optimisation"]:
-            raise ValueError("Type must be backtest, hpt or optimisation")
+        if type not in ["backtest", "hpt", "returns"]:
+            raise ValueError("Type must be backtest, hpt or returns")
         if type == "backtest":
             path = os.path.join(self._data_path, "datasets", "backtest.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
@@ -55,9 +55,9 @@ class DataLoad():
             X, y = self._get(X_cache, y_cache, months, cutoff)
             return X, y
         else:
-            path = os.path.join(self._data_path, "datasets", "optimisation.csv")
+            path = os.path.join(self._data_path, "datasets", "returns.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
-            print("optimisation.csv loaded succesfully")
+            print("returns.csv loaded succesfully")
             return df
 
     def _get_index(self, months, cutoff_date):
