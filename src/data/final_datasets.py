@@ -47,3 +47,10 @@ class Datasets():
         full_path = os.path.join(self._path, "returns.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Returns dataset created succesfully")
+
+    def create_market_caps_dataset(self):
+        df = self._dl.load_market_caps("processed")
+        df = df.resample("BME").last()
+        full_path = os.path.join(self._path, "market_caps.csv")
+        df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
+        print("Market caps dataset created succesfully")

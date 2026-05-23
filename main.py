@@ -14,7 +14,7 @@ torch.manual_seed(42)
 DOWNLOAD = False
 CLEAN = False
 PROCESS = False
-FEATURE = False
+FEATURE = True
 DATASET = True
 tickers = ["AAPL", "MSFT", "NVDA", "GOOG", "ORCL", "AVGO","AMZN", "HD", "MCD", 
            "NKE","JNJ", "UNH", "PFE", "MRK","CAT", "BA", "UPS", "MMM","XOM", 
@@ -25,6 +25,7 @@ def main():
         dd = DownloadData()
         dd.download_tick_data(tickers)
         dd.download_gspc()
+        dd.download_market_caps()
         print("Data downloaded successfully.")
     if CLEAN:
         cd = CleanData()
@@ -33,6 +34,7 @@ def main():
     if PROCESS:
         pd = ProcessData()
         pd.process_data()
+        pd.process_market_caps()
         print("Data processed successfully.")
     if FEATURE:
         fc = FeatureCreation()
@@ -43,6 +45,7 @@ def main():
         ds.create_backtest_dataset()
         ds.create_hpt_dataset()
         ds.create_returns_dataset()
+        ds.create_market_caps_dataset()
         print("Datasets created successfully.")
 
 

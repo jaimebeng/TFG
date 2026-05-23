@@ -4,6 +4,8 @@ import pandas as pd
 from pathlib import Path
 from numpy.lib.stride_tricks import sliding_window_view
 from scipy.stats import linregress
+import pandas_market_calendars as mcal
+
 
 
 class ProcessData():
@@ -209,5 +211,41 @@ class ProcessData():
                 file_path = os.path.join(self._output_path, f"{ticker}.csv")
                 df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
                 print(f"{ticker}.csv processed succesfully")
+
+    def process_market_caps(self):
+        path = os.path.join("/home/jaime/Documents/TFG/data/raw", "market_caps.csv")
+        df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
+        nyse = mcal.get_calendar("NYSE")
+
+        all_days = pd.date_range(start="2010-01-01", end="2025-12-31", freq="D")
+        all_days = pd.DatetimeIndex(all_days)
+        if getattr(all_days, 'tz', None) is not None:
+            all_days = all_days.tz_convert("UTC").tz_localize(None)
+
+        nyse_days = nyse.valid_days(start_date="2010-01-01", end_date="2025-12-31")
+        nyse_days = pd.DatetimeIndex(nyse_days)
+        if getattr(nyse_days, 'tz', None) is not None:
+            nyse_days = nyse_days.tz_convert("UTC").tz_localize(None)
+
+        df.index = pd.to_datetime(df.index)
+        if getattr(df.index, 'tz', None) is not None:
+            df.index = df.index.tz_convert("UTC").tz_localize(None)
+
+        df = df.sort_index()
+        df = df.reindex(all_days)
+
+        for col in df.columns:
+            col_first = df[col].first_valid_index()
+            if col_first is not None:
+                df.loc[:col_first, col] = df.loc[col_first, col]
+
+        df = df.ffill()
+        df = df.reindex(nyse_days)
+
+        file_path = os.path.join(self._output_path, "market_caps.csv")
+        df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
+        print("market_caps.csv processed succesfully")
+
+
 
     
