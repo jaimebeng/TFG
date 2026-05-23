@@ -28,6 +28,8 @@ class DataLoad():
         directory = os.path.join(self._data_path, type)
         dfs = {}
         for filename in os.listdir(directory):
+            if filename in ["GSPC.csv", "market_caps.csv"]:
+                continue
             full_path = os.path.join(directory, filename)
             df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
             file = Path(filename)
@@ -37,8 +39,17 @@ class DataLoad():
             
         return dfs
     
-    def load_dataset(self,type, cutoff = None):
-        if type not in ["backtest", "hpt", "returns"]:
+    def load_market_caps(self, type):
+        if type not in ["raw","processed"]:
+            raise ValueError("Type must be raw or processed")
+        file_path = os.path.join("/home/jaime/Documents/TFG/data", type, "market_caps.csv")
+        df = pd.read_csv(file_path, header=0, index_col=0, parse_dates=True)
+        print("market_caps.csv loaded succesfully")
+
+        return df
+    
+    def load_dataset(self,type, cutoff = None, date = None):
+        if type not in ["backtest", "hpt", "returns", "market_caps"]:
             raise ValueError("Type must be backtest, hpt or returns")
         if type == "backtest":
             path = os.path.join(self._data_path, "datasets", "backtest.csv")
@@ -54,11 +65,20 @@ class DataLoad():
             months = load(f"{path}/months.joblib")
             X, y = self._get(X_cache, y_cache, months, cutoff)
             return X, y
-        else:
+        elif type == "returns":
             path = os.path.join(self._data_path, "datasets", "returns.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
             print("returns.csv loaded succesfully")
             return df
+        elif type == "market_caps":
+            if date == None:
+                raise ValueError("Market caps dataset needs a date")
+            path = os.path.join(self._data_path, "datasets", "market_caps.csv")
+            df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
+            df = df[df.index == date]
+            return df
+            
+
 
     def _get_index(self, months, cutoff_date):
         cutoff_date = np.datetime64(cutoff_date)
@@ -77,7 +97,4 @@ class DataLoad():
         y = y_cache[:len(X_cache[idx])]
 
         return X, y
-
-
-
 
