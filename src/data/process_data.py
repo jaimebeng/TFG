@@ -249,9 +249,12 @@ class ProcessData():
     def process_risk_free_rate(self):
         path = os.path.join("/home/jaime/Documents/TFG/data/clean", "IRX.csv")
         df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
+        df["Close"] = df["Close"] / 100
         df = df.resample("BME").last()
-        df["RFR"] = (1 + (df["Close"] / 100)) ** (1 / 12) - 1
+        df["RFR"] = df["Close"] / 12
+        df["RFR"] = df["RFR"].shift(1)
         df = df[["RFR"]]
+        df.dropna(inplace=True)
         file_path = os.path.join(self._output_path, "IRX.csv")
         df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
         print("IRX.csv processed succesfully")
