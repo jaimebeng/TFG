@@ -7,21 +7,19 @@ import cvxpy as cp
 
 class Black_Litterman():
 
-    def __init__(self,tickers, delta = 2.5, gamma = 2.5, tau = 0.025, n_assets = 30):
-        self._tickers = tickers
+    def __init__(self, delta = 2.5, gamma = 2.5, tau = 0.025, n_assets = 30):
         self._delta = delta
         self._gamma = gamma
         self._tau = tau
         self._n_assets = n_assets
 
     def _calculate_zscores(self, preds):
-        results = pd.DataFrame({"Ticker": self._tickers})
-        results["Predictions"] = preds
-        results["Ranking"] = results["Predictions"].rank(ascending=True) 
-        results["Probabilities"] = (results["Ranking"] - 0.5) / len(results["Ranking"])
-        results["Z-Score"] = norm.ppf(results["Probabilities"])
+        preds["Ranking"] = preds["Predictions"].rank(ascending=True) 
+        preds["Probabilities"] = (preds["Ranking"] - 0.5) / len(preds["Ranking"])
+        preds["Z-Score"] = norm.ppf(preds["Probabilities"])
+        preds = preds.set_index("Ticker")
 
-        return results
+        return preds
     
     def _calculate_sigma(self, df, verbose = 0):
         df = df.copy()
@@ -68,57 +66,60 @@ class Black_Litterman():
 
         return sigma, vols
     
-    def _calculate_pi(self):
-        market_weights = np.ones(self._n_assets) / self._n_assets
-        pi = self._delta * self.sigma @ market_weights
+    def _calculate_pi(self, date, sigma):
+        dl = DataLoad()
+        market_caps = dl.load_dataset("market_caps", date=date)
+        total_mcap = np.sum(market_caps.to_numpy())
+        market_weights = (market_caps.to_numpy().flatten() / total_mcap).reshape(self._n_assets, 1)
+
+        pi = self._delta * sigma @ market_weights
 
         return pi
 
     def _calculate_Q(self, vols, z_scores):
         monthly_vols = vols * np.sqrt(21)
-        Q = z_scores * monthly_vols 
+        z = np.asarray(z_scores).reshape(-1,1)
+        Q = z * monthly_vols.reshape(-1,1)
 
         return Q
 
-    def _calculate_omega(self, confidence_factor, sigma):
+    def _calculate_omega(self, confidence_factor, sigma, P):
         conf_mult = (1 - confidence_factor) / confidence_factor
-        diag_cov = np.diag(sigma)
-        omega = diag_cov * conf_mult
+        omega = np.diag(np.diag(P @ sigma @ P.T) * conf_mult)
 
         return omega
     
-    def _calculate_expected_returns(self, tau, sigma, pi, omega, Q):
-        P = np.eye(30)
-        tau = 0.025
-        tau_sigma = tau * sigma
+    def _calculate_expected_returns(self, sigma, pi, omega, Q, P):
+        tau_sigma = self._tau * sigma
         deviation = Q - (P @ pi)
         kalman_gain = tau_sigma @ P.T @ np.linalg.inv(((P @ tau_sigma @ P.T) + omega))
         expected_returns = pi + (kalman_gain @ deviation)
 
         return expected_returns
     
-    def optimize_portfolio(self, df, confidence_factor, verbose = 0):
-        df.drop(columns="GSPC", inplace=True)
-        results = self._calculate_zscores()
-        sigma, vols = self._calculate_sigma(df, verbose)
-        pi = self._calculate_pi
+    def optimize_portfolio(self, preds, returns_df, date, confidence_factor, verbose = 0):
+        results = self._calculate_zscores(preds)
+        sigma, vols = self._calculate_sigma(returns_df, verbose)
+        pi = self._calculate_pi(date, sigma)
+        results = results.reindex(returns_df.columns, axis=0)
         Q = self._calculate_Q(vols, results["Z-Score"])
-        omega = self._calculate_omega(confidence_factor, sigma)
-        results["Expected Returns"] = self._calculate_expected_returns(self._tau, sigma, pi, omega, Q)
+        P = np.eye(self._n_assets)
+        omega = self._calculate_omega(confidence_factor, sigma, P)
+        expected_returns = self._calculate_expected_returns(sigma, pi, omega, Q, P)
 
-        mu = results["Expected Returns"].to_numpy()
+        mu = expected_returns
         weights = cp.Variable(self._n_assets)
         risk = cp.quad_form(weights,sigma)
-        returns = mu @ weights
+        port_returns = weights.T @ mu
 
-        objective = cp.Maximize(returns - ((1/2) * self._gamma * risk))
+        objective = cp.Maximize(port_returns - ((1/2) * self._gamma * risk))
         constraints = [weights >= -0.1, weights <= 0.1, cp.sum(weights) == 0, cp.norm1(weights) <= 2]
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.ECOS)
 
         results["Portfolio Weights"] = weights.value
         if verbose:
-            for ticker, value in zip(results["Ticker"], results["Portfolio Weights"]):
+            for ticker, value in zip(results.index, results["Portfolio Weights"]):
                 print(f"{ticker}: {value}")
 
-        return results[["Ticker", "Portfolio Weights"]]
+        return results[["Portfolio Weights"]]
