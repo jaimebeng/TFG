@@ -5,7 +5,7 @@ from scipy.stats import norm
 import matplotlib.pyplot as plt
 import cvxpy as cp
 
-class Black_Litterman():
+class BlackLitterman():
 
     def __init__(self, delta = 2.5, gamma = 2.5, tau = 0.025, n_assets = 30):
         self._delta = delta
