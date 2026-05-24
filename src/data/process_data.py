@@ -202,7 +202,7 @@ class ProcessData():
         gspc.to_csv(file_path, index=True, date_format="%Y-%m-%d")
         print("GSPC.csv processed succesfully")
         for filename in os.listdir(directory):
-            if filename != "GSPC.csv":
+            if filename not in ["GSPC.csv","IRX.csv"]:
                 full_path = os.path.join(directory, filename)
                 df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
                 df = self._process_ticker(df,gspc)
@@ -246,6 +246,12 @@ class ProcessData():
         df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
         print("market_caps.csv processed succesfully")
 
-
-
-    
+    def process_risk_free_rate(self):
+        path = os.path.join("/home/jaime/Documents/TFG/data/clean", "IRX.csv")
+        df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
+        df = df.resample("BME").last()
+        df["RFR"] = (1 + (df["Close"] / 100)) ** (1 / 12) - 1
+        df = df[["RFR"]]
+        file_path = os.path.join(self._output_path, "IRX.csv")
+        df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
+        print("IRX.csv processed succesfully")

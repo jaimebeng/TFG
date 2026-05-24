@@ -46,7 +46,7 @@ class FeatureCreation():
     def create_features(self):
         directory = "/home/jaime/Documents/TFG/data/processed"
         for filename in os.listdir(directory):
-            if filename not in ["GSPC.csv","market_caps.csv"]:
+            if filename not in ["GSPC.csv","market_caps.csv","IRX.csv"]:
                 full_path = os.path.join(directory, filename)
                 df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
                 file = Path(filename)
