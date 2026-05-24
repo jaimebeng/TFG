@@ -28,7 +28,7 @@ class DataLoad():
         directory = os.path.join(self._data_path, type)
         dfs = {}
         for filename in os.listdir(directory):
-            if filename in ["GSPC.csv", "market_caps.csv"]:
+            if filename in ["GSPC.csv", "market_caps.csv", "IRX.csv"]:
                 continue
             full_path = os.path.join(directory, filename)
             df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
@@ -48,9 +48,18 @@ class DataLoad():
 
         return df
     
+    def load_risk_free_rate(self, type):
+        if type not in ["raw","clean", "processed"]:
+            raise ValueError("Type must be raw, clean or processed")
+        file_path = os.path.join("/home/jaime/Documents/TFG/data", type, "IRX.csv")
+        df = pd.read_csv(file_path, header=0, index_col=0, parse_dates=True)
+        print("IRX.csv loaded succesfully")
+
+        return df
+
     def load_dataset(self,type, cutoff = None, date = None):
-        if type not in ["backtest", "hpt", "returns", "market_caps"]:
-            raise ValueError("Type must be backtest, hpt or returns")
+        if type not in ["backtest", "hpt", "returns", "market_caps", "rfr"]:
+            raise ValueError("Type must be backtest, hpt, returns, market_caps or rfr")
         if type == "backtest":
             path = os.path.join(self._data_path, "datasets", "backtest.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
@@ -77,8 +86,10 @@ class DataLoad():
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
             df = df[df.index == date]
             return df
-            
-
+        else:
+            path = os.path.join(self._data_path, "datasets", "IRX.csv")
+            df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
+            return df
 
     def _get_index(self, months, cutoff_date):
         cutoff_date = np.datetime64(cutoff_date)
@@ -97,4 +108,3 @@ class DataLoad():
         y = y_cache[:len(X_cache[idx])]
 
         return X, y
-

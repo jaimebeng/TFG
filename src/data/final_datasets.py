@@ -10,15 +10,17 @@ class Datasets():
     """
     """
 
-    def __init__(self):
+    def __init__(self, order):
         self._path = "/home/jaime/Documents/TFG/data/datasets"
         os.makedirs(self._path, exist_ok=True)
         self._dl = DataLoad()
+        self._order = sorted(order)
     
     def create_backtest_dataset(self):
         dfs = self._dl.load_multiple_data("features")
         ft = FeatureTransformation()
         df = ft.transform_features(dfs)
+        df
         full_path = os.path.join(self._path, "backtest.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Backtest dataset created succesfully")
@@ -44,6 +46,8 @@ class Datasets():
             dfs[tick].rename(columns={"Returns": tick},inplace=True)
             dfs[tick].dropna(how='any', inplace=True)
         df = pd.concat(dfs.values(),axis=1).sort_index()
+        df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
+        df = df[self._order]
         full_path = os.path.join(self._path, "returns.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Returns dataset created succesfully")
@@ -51,6 +55,15 @@ class Datasets():
     def create_market_caps_dataset(self):
         df = self._dl.load_market_caps("processed")
         df = df.resample("BME").last()
+        df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
+        df = df[self._order]
         full_path = os.path.join(self._path, "market_caps.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Market caps dataset created succesfully")
+
+    def create_risk_free_rate_dataset(self):
+        df = self._dl.load_risk_free_rate("processed")
+        df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
+        full_path = os.path.join(self._path, "rfr.csv")
+        df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
+        print("Risk free rate dataset created succesfully")

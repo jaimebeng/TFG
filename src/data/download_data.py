@@ -116,3 +116,14 @@ class DownloadData():
             output_file = os.path.join(self._output_path, "market_caps.csv")
             market_caps_df.to_csv(output_file, index=True)
             print(f"\nSaved market caps to {output_file}")
+
+    def download_risk_free_rate(self, start_date="2010-01-01", end_date="2026-02-01"):
+        file_path = f"{self._output_path}/IRX.csv"
+        print("\nDownloading 3 month Treasury bill") 
+        try: 
+            df = yf.download("^IRX", start=start_date, end=end_date,auto_adjust=True) 
+            df.to_csv(file_path,index=True) 
+        except Exception as e:
+            print("\nError downloading IRX: {e}") 
+        
+        print("\nDownload complete.")
