@@ -52,10 +52,19 @@ class Datasets():
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Returns dataset created succesfully")
 
+    def create_snp500_dataset(self):
+        df = self._dl.load_single_data("processed", "GSPC")
+        df = df["Close"]
+        df = df.resample("BME").last()
+        df = df[(df.index >= "2017-02-28") & (df.index <= "2025-12-31")]
+        full_path = os.path.join(self._path, "GSPC.csv")
+        df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
+        print("S&P500 dataset created succesfully")
+
     def create_market_caps_dataset(self):
         df = self._dl.load_market_caps("processed")
         df = df.resample("BME").last()
-        df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
+        df = df[(df.index >= "2017-01-31") & (df.index <= "2025-12-31")]
         df = df[self._order]
         full_path = os.path.join(self._path, "market_caps.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
