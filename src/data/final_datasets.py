@@ -74,6 +74,6 @@ class Datasets():
     def create_risk_free_rate_dataset(self):
         df = self._dl.load_risk_free_rate("processed")
         df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
-        full_path = os.path.join(self._path, "rfr.csv")
+        full_path = os.path.join(self._path, "IRX.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Risk free rate dataset created succesfully")
