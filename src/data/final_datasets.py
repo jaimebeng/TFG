@@ -54,8 +54,9 @@ class Datasets():
 
     def create_snp500_dataset(self):
         df = self._dl.load_single_data("processed", "GSPC")
-        df = df["Close"]
         df = df.resample("BME").last()
+        df["Returns"] = df["Close"].pct_change()
+        df = df[["Returns"]]
         df = df[(df.index >= "2017-02-28") & (df.index <= "2025-12-31")]
         full_path = os.path.join(self._path, "GSPC.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
