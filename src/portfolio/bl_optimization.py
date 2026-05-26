@@ -120,9 +120,9 @@ class BlackLitterman():
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.ECOS)
 
-        results["Portfolio Weights"] = weights.value
-        if verbose:
-            for ticker, value in zip(results.index, results["Portfolio Weights"]):
-                print(f"{ticker}: {value}")
+        #results["Portfolio Weights"] = weights.value
+        #if verbose:
+        #    for ticker, value in zip(results.index, results["Portfolio Weights"]):
+        #        print(f"{ticker}: {value}")
 
-        return results[["Portfolio Weights"]]
+        return weights.value

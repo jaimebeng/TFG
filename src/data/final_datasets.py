@@ -2,8 +2,9 @@ import numpy as np
 import os
 from src.data.data_loader import DataLoad
 from src.data.transform_features import FeatureTransformation
-from joblib import dump, load
+from joblib import dump
 import pandas as pd
+import pandas_market_calendars as mcal
 
 
 class Datasets():
@@ -62,16 +63,11 @@ class Datasets():
 
     def create_market_caps_dataset(self):
         df = self._dl.load_market_caps("processed")
-        df = df.resample("BME").last()
+        nyse = mcal.get_calendar('NYSE')
+        nyse_bme = pd.offsets.CustomBusinessMonthEnd(calendar=nyse.regular_holidays)
+        df = df.resample(nyse_bme).last()
         df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
         df = df[self._order]
         full_path = os.path.join(self._path, "market_caps.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Market caps dataset created succesfully")
-
-    def create_risk_free_rate_dataset(self):
-        df = self._dl.load_risk_free_rate("processed")
-        df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
-        full_path = os.path.join(self._path, "IRX.csv")
-        df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
-        print("Risk free rate dataset created succesfully")

@@ -7,6 +7,7 @@ import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
 import pandas as pd
+from fredapi import Fred
 
 class DownloadData():
     """Downloads historical stock price data from yfinance and saves it as CSV files."""
@@ -14,6 +15,7 @@ class DownloadData():
     def __init__(self,):
         self._output_path = "/home/jaime/Documents/TFG/data/raw"
         os.makedirs(self._output_path, exist_ok=True)
+        self._api_key = "4e41cebe7222052027837201b45d2ca2"
 
     def download_tick_data(self,tickers, start_date="2010-01-01", end_date="2026-02-01"):
 
@@ -118,12 +120,17 @@ class DownloadData():
             print(f"\nSaved market caps to {output_file}")
 
     def download_risk_free_rate(self, start_date="2010-01-01", end_date="2026-02-01"):
-        file_path = f"{self._output_path}/IRX.csv"
+        file_path = f"{self._output_path}/GS3M.csv"
         print("\nDownloading 3 month Treasury bill") 
         try: 
-            df = yf.download("^IRX", start=start_date, end=end_date,auto_adjust=True) 
-            df.to_csv(file_path,index=True) 
+            fred = Fred(api_key=os.getenv("FRED_API_KEY"))
+            series = fred.get_series("GS3M", start=start_date, end=end_date, frequency="m")
+            df = series.to_frame(name="Close")
+            if df is None or df.empty:
+                raise ValueError("Downloaded dataset is empty.")
+            df.index.name = "Date"
+            df.to_csv(file_path) 
         except Exception as e:
-            print("\nError downloading IRX: {e}") 
+            print(f"\nError downloading GS3M: {e}") 
         
         print("\nDownload complete.")
