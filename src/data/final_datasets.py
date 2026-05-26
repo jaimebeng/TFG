@@ -48,9 +48,16 @@ class Datasets():
         df = pd.concat(dfs.values(),axis=1).sort_index()
         df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
         df = df[self._order]
-        full_path = os.path.join(self._path, "stock_returns.csv")
+        full_path = os.path.join(self._path, "daily_stock_returns.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
-        print("Returns dataset created succesfully")
+        df2 = df.copy()
+        nyse = mcal.get_calendar('NYSE')
+        nyse_bme = pd.offsets.CustomBusinessMonthEnd(calendar=nyse.regular_holidays)
+        df2 = df2.resample(nyse_bme).last()
+        df2 = df2[self._order]
+        full_path = os.path.join(self._path, "monthly_stock_returns.csv")
+        df2.to_csv(full_path, index=True, date_format="%Y-%m-%d")
+        print("Returns datasets created succesfully")
 
     def create_snp500_dataset(self):
         df = self._dl.load_single_data("processed", "GSPC")

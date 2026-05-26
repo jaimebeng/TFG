@@ -97,15 +97,23 @@ class BlackLitterman():
 
         return expected_returns
     
-    def optimize_portfolio(self, returns_df, date, preds = None, confidence_factor = None, verbose = 0):
+    def optimize_portfolio(self, returns_df, date, preds = None, confidence_factor = None, random = 0, verbose = 0):
         sigma, vols = self._calculate_sigma(returns_df, verbose)
         pi = self._calculate_pi(date, sigma)
-        if preds != None and confidence_factor != None:
+        if preds is not None and confidence_factor != None:
             results = self._calculate_zscores(preds)
             results = results.reindex(returns_df.columns, axis=0)
             Q = self._calculate_Q(vols, results["Z-Score"])
             P = np.eye(self._n_assets)
             omega = self._calculate_omega(confidence_factor, sigma, P)
+            expected_returns = self._calculate_expected_returns(sigma, pi, omega, Q, P)
+        elif preds is not None and random != 0:
+            results = self._calculate_zscores(preds)
+            results = results.reindex(returns_df.columns, axis=0)
+            Q = self._calculate_Q(vols, results["Z-Score"])
+            P = np.eye(self._n_assets)
+            conf_mult = 1
+            omega = np.diag(np.diag(P @ sigma @ P.T) * conf_mult)
             expected_returns = self._calculate_expected_returns(sigma, pi, omega, Q, P)
         else:
             expected_returns = pi

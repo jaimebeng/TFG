@@ -75,10 +75,13 @@ class DataLoad():
             X, y = self._get(X_cache, y_cache, months, cutoff)
             return X, y
         elif type == "returns":
-            path = os.path.join(self._data_path, "datasets", "stock_returns.csv")
+            path = os.path.join(self._data_path, "datasets", "daily_stock_returns.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
-            print("returns.csv loaded succesfully")
-            return df
+            print("daily_stock_returns.csv loaded succesfully")
+            path = os.path.join(self._data_path, "datasets", "monthly_stock_returns.csv")
+            df2 = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
+            print("monthly_stock_returns.csv loaded succesfully")
+            return df, df2
         elif type == "GSPC":
             path = os.path.join(self._data_path, "datasets", "GSPC.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
