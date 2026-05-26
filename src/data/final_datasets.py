@@ -16,17 +16,16 @@ class Datasets():
         self._dl = DataLoad()
         self._order = sorted(order)
     
-    def create_backtest_dataset(self):
+    def create_model_dataset(self):
         dfs = self._dl.load_multiple_data("features")
         ft = FeatureTransformation()
         df = ft.transform_features(dfs)
-        df
-        full_path = os.path.join(self._path, "backtest.csv")
+        full_path = os.path.join(self._path, "model.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Backtest dataset created succesfully")
 
     def create_hpt_dataset(self):
-        df = self._dl.load_dataset("backtest")
+        df = self._dl.load_dataset("model")
         X = df.drop(columns=["Ticker","Target"])
         y = df["Target"].to_numpy()
         months = np.sort(X.index.unique())
@@ -48,13 +47,12 @@ class Datasets():
         df = pd.concat(dfs.values(),axis=1).sort_index()
         df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
         df = df[self._order]
-        full_path = os.path.join(self._path, "returns.csv")
+        full_path = os.path.join(self._path, "stock_returns.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Returns dataset created succesfully")
 
     def create_snp500_dataset(self):
         df = self._dl.load_single_data("processed", "GSPC")
-        df = df.resample("BME").last()
         df["Returns"] = df["Close"].pct_change()
         df = df[["Returns"]]
         df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
