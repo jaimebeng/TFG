@@ -58,10 +58,10 @@ class DataLoad():
         return df
 
     def load_dataset(self,type, cutoff = None, date = None):
-        if type not in ["backtest", "hpt", "returns", "GSPC", "market_caps", "rfr"]:
-            raise ValueError("Type must be backtest, hpt, returns, GSPC, market_caps or rfr")
-        if type == "backtest":
-            path = os.path.join(self._data_path, "datasets", "backtest.csv")
+        if type not in ["model", "hpt", "returns", "GSPC", "market_caps", "rfr"]:
+            raise ValueError("Type must be model, hpt, returns, GSPC, market_caps or rfr")
+        if type == "model":
+            path = os.path.join(self._data_path, "datasets", "model.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
             print("backtest.csv loaded succesfully")
             return df
@@ -75,7 +75,7 @@ class DataLoad():
             X, y = self._get(X_cache, y_cache, months, cutoff)
             return X, y
         elif type == "returns":
-            path = os.path.join(self._data_path, "datasets", "returns.csv")
+            path = os.path.join(self._data_path, "datasets", "stock_returns.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
             print("returns.csv loaded succesfully")
             return df
