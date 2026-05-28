@@ -50,13 +50,21 @@ class Datasets():
         df = df[self._order]
         full_path = os.path.join(self._path, "daily_stock_returns.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
-        df2 = df.copy()
+        dfs = self._dl.load_multiple_data("processed")
         nyse = mcal.get_calendar('NYSE')
         nyse_bme = pd.offsets.CustomBusinessMonthEnd(calendar=nyse.regular_holidays)
-        df2 = df2.resample(nyse_bme).last()
-        df2 = df2[self._order]
+        for tick in dfs.keys():
+            dfs[tick] = dfs[tick].resample(nyse_bme).last()
+            dfs[tick]["Returns"] = dfs[tick]["Close"].pct_change()
+            dfs[tick] = dfs[tick][["Returns"]].copy()
+            dfs[tick].rename(columns={"Returns": tick},inplace=True)
+            dfs[tick].dropna(how='any', inplace=True)
+        df = pd.concat(dfs.values(),axis=1).sort_index()
+        df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
+        df = df[self._order]
+        df = df[self._order]
         full_path = os.path.join(self._path, "monthly_stock_returns.csv")
-        df2.to_csv(full_path, index=True, date_format="%Y-%m-%d")
+        df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Returns datasets created succesfully")
 
     def create_snp500_dataset(self):

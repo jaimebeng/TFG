@@ -28,7 +28,7 @@ class DataLoad():
         directory = os.path.join(self._data_path, type)
         dfs = {}
         for filename in os.listdir(directory):
-            if filename in ["GSPC.csv", "market_caps.csv", "IRX.csv"]:
+            if filename in ["GSPC.csv", "market_caps.csv", "GS3M.csv"]:
                 continue
             full_path = os.path.join(directory, filename)
             df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
