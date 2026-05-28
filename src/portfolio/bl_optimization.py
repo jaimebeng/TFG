@@ -118,7 +118,23 @@ class BlackLitterman():
         pi = self._calculate_pi(date, sigma)
         if preds is not None:
             results = self._calculate_zscores(preds)
-            results = results.reindex(returns_df.columns, axis=0)
+
+            # Validation: ensure tickers in preds exactly match the returns dataframe
+            returns_cols = list(returns_df.columns)
+            # check duplicate tickers in preds
+            if results.index.duplicated().any():
+                dup = results.index[results.index.duplicated()].tolist()
+                raise ValueError(f"Duplicate tickers found in preds: {dup}")
+
+            preds_set = set(results.index.tolist())
+            returns_set = set(returns_cols)
+            if preds_set != returns_set:
+                missing = sorted(list(returns_set - preds_set))
+                extra = sorted(list(preds_set - returns_set))
+                raise ValueError(f"Ticker mismatch between preds and returns_df. Missing in preds: {missing}; Extra in preds: {extra}")
+
+            # Reindex deterministically to match returns_df column order
+            results = results.reindex(returns_cols, axis=0)
             Q = self._calculate_Q(vols, results["Z-Score"])
             P = np.eye(self._n_assets)
             omega = self._calculate_omega(sigma, P, y_pred, y_true)
