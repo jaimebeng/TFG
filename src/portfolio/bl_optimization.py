@@ -1,7 +1,7 @@
 from src.data.data_loader import DataLoad
 import numpy as np
 import pandas as pd
-from scipy.stats import norm
+from scipy.stats import norm, spearmanr
 import matplotlib.pyplot as plt
 import cvxpy as cp
 
@@ -82,10 +82,26 @@ class BlackLitterman():
         Q = z * monthly_vols.reshape(-1,1)
 
         return Q
+    
+    def _calculate_conf_factor(self, y_preds, y_trues):
+        ics = [spearmanr(y_pred,y_true)[0] for y_pred,y_true in zip(y_preds,y_trues)]
+        mean_ic = np.mean(ics)
+        std_ic = np.std(ics)
+        var_ic = std_ic ** 2
+        signal_strength = mean_ic ** 2
+        noise = var_ic / (np.mean(np.abs(ics)) + 1e-8)
 
-    def _calculate_omega(self, confidence_factor, sigma, P):
-        conf_mult = (1 - confidence_factor) / confidence_factor
-        omega = np.diag(np.diag(P @ sigma @ P.T) * conf_mult)
+        confidence = signal_strength / noise
+        confidence = np.clip(confidence, 1e-4, 10.0)
+        
+        return confidence
+
+    def _calculate_omega(self, sigma, P, y_pred = None, y_true = None):
+        if y_pred is None or len(y_pred) <= 2:
+            confidence_factor = 1
+        else:
+            confidence_factor = self._calculate_conf_factor(y_pred, y_true)
+        omega = np.diag(np.diag(P @ sigma @ P.T) * (1 / confidence_factor))
 
         return omega
     
@@ -97,23 +113,15 @@ class BlackLitterman():
 
         return expected_returns
     
-    def optimize_portfolio(self, returns_df, date, preds = None, confidence_factor = None, random = 0, verbose = 0):
+    def optimize_portfolio(self, returns_df, date, preds = None, y_pred = None, y_true = None, verbose = 0):
         sigma, vols = self._calculate_sigma(returns_df, verbose)
         pi = self._calculate_pi(date, sigma)
-        if preds is not None and confidence_factor != None:
+        if preds is not None:
             results = self._calculate_zscores(preds)
             results = results.reindex(returns_df.columns, axis=0)
             Q = self._calculate_Q(vols, results["Z-Score"])
             P = np.eye(self._n_assets)
-            omega = self._calculate_omega(confidence_factor, sigma, P)
-            expected_returns = self._calculate_expected_returns(sigma, pi, omega, Q, P)
-        elif preds is not None and random != 0:
-            results = self._calculate_zscores(preds)
-            results = results.reindex(returns_df.columns, axis=0)
-            Q = self._calculate_Q(vols, results["Z-Score"])
-            P = np.eye(self._n_assets)
-            conf_mult = 1
-            omega = np.diag(np.diag(P @ sigma @ P.T) * conf_mult)
+            omega = self._calculate_omega(sigma, P, y_pred, y_true)
             expected_returns = self._calculate_expected_returns(sigma, pi, omega, Q, P)
         else:
             expected_returns = pi
@@ -133,4 +141,4 @@ class BlackLitterman():
         #    for ticker, value in zip(results.index, results["Portfolio Weights"]):
         #        print(f"{ticker}: {value}")
 
-        return weights.value
+        return weights.value, expected_returns
