@@ -48,18 +48,18 @@ class DataLoad():
 
         return df
     
-    def load_risk_free_rate(self, type):
-        if type not in ["raw"]:
-            raise ValueError("Type must be raw ")
-        file_path = os.path.join("/home/jaime/Documents/TFG/data", type, "IRX.csv")
+    def load_fama(self, type):
+        if type not in ["raw", "clean"]:
+            raise ValueError("Type must be raw or clean")
+        file_path = os.path.join("/home/jaime/Documents/TFG/data", type, "fama.csv")
         df = pd.read_csv(file_path, header=0, index_col=0, parse_dates=True)
-        print("GS3M.csv loaded succesfully")
+        print("fama.csv loaded succesfully")
 
         return df
 
     def load_dataset(self,type, cutoff = None, date = None):
-        if type not in ["model", "hpt", "returns", "GSPC", "market_caps"]:
-            raise ValueError("Type must be model, hpt, returns, GSPC or market_caps")
+        if type not in ["model", "hpt", "returns", "GSPC", "market_caps", "fama"]:
+            raise ValueError("Type must be model, hpt, returns, GSPC, market_caps or fama")
         if type == "model":
             path = os.path.join(self._data_path, "datasets", "model.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
@@ -93,6 +93,11 @@ class DataLoad():
             path = os.path.join(self._data_path, "datasets", "market_caps.csv")
             df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
             df = df[df.index == date]
+            return df
+        else:
+            path = os.path.join(self._data_path, "datasets", "fama.csv")
+            df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
+            print("fama.csv loaded succesfully")
             return df
 
     def _get_index(self, months, cutoff_date):

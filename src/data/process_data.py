@@ -202,7 +202,7 @@ class ProcessData():
         gspc.to_csv(file_path, index=True, date_format="%Y-%m-%d")
         print("GSPC.csv processed succesfully")
         for filename in os.listdir(directory):
-            if filename not in ["GSPC.csv","GS3M.csv"]:
+            if filename not in ["GSPC.csv","fama.csv"]:
                 full_path = os.path.join(directory, filename)
                 df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
                 df = self._process_ticker(df,gspc)
@@ -245,12 +245,3 @@ class ProcessData():
         file_path = os.path.join(self._output_path, "market_caps.csv")
         df.to_csv(file_path, index=True, date_format="%Y-%m-%d")
         print("market_caps.csv processed succesfully")
-
-    def process_risk_free_rate(self):
-        path = os.path.join("/home/jaime/Documents/TFG/data/raw", "GS3M.csv")
-        df = pd.read_csv(path, header=0, index_col=0, parse_dates=True)
-        df = df[(df.index > "2016-12-31") & (df.index <= "2025-12-31")]
-        annual_yield = df["Close"] / 100
-        rfr = annual_yield.mean() / 12
-        print("GS3M.csv processed succesfully")
-        return rfr

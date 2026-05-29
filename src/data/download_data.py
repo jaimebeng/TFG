@@ -8,6 +8,9 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import pandas as pd
 from fredapi import Fred
+import requests
+import zipfile
+import io
 
 class DownloadData():
     """Downloads historical stock price data from yfinance and saves it as CSV files."""
@@ -119,18 +122,17 @@ class DownloadData():
             market_caps_df.to_csv(output_file, index=True)
             print(f"\nSaved market caps to {output_file}")
 
-    def download_risk_free_rate(self, start_date="2010-01-01", end_date="2026-02-01"):
-        file_path = f"{self._output_path}/GS3M.csv"
-        print("\nDownloading 3 month Treasury bill") 
+    def download_fama_data(self):
+        file_path = f"{self._output_path}/fama.csv"
+        print("\nDownloading Fama-French 5 factors data") 
         try: 
-            fred = Fred(api_key=os.getenv("FRED_API_KEY"))
-            series = fred.get_series("GS3M", start=start_date, end=end_date, frequency="m")
-            df = series.to_frame(name="Close")
-            if df is None or df.empty:
-                raise ValueError("Downloaded dataset is empty.")
-            df.index.name = "Date"
-            df.to_csv(file_path) 
+            url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_5_Factors_2x3_CSV.zip"
+            response = requests.get(url)
+            zf = zipfile.ZipFile(io.BytesIO(response.content))
+            csv_name = zf.namelist()[0]
+            df = pd.read_csv(zf.open(csv_name), skiprows=3)
+            df.to_csv(file_path)  
         except Exception as e:
-            print(f"\nError downloading GS3M: {e}") 
+            print(f"\nError downloading Fama-French data: {e}") 
         
         print("\nDownload complete.")
