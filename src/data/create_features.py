@@ -18,6 +18,7 @@ class FeatureCreation():
     def _features_engineering(self,df,ticker):
         df["Ticker"] = ticker
         df.dropna(how='any', inplace=True)
+        df = df.resample("BME").last()
         nyse = mcal.get_calendar("NYSE")
         schedule = nyse.schedule(start_date="1960-01-01",end_date="2030-12-31")
         month_ends = (schedule.index.to_series().groupby(schedule.index.to_period("M")).max())
