@@ -51,10 +51,12 @@ class Datasets():
         full_path = os.path.join(self._path, "daily_stock_returns.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         dfs = self._dl.load_multiple_data("processed")
-        nyse = mcal.get_calendar('NYSE')
-        nyse_bme = pd.offsets.CustomBusinessMonthEnd(calendar=nyse.regular_holidays)
+        nyse = mcal.get_calendar("NYSE")
+        schedule = nyse.schedule(start_date="1960-01-01",end_date="2030-12-31")
+        month_ends = (schedule.index.to_series().groupby(schedule.index.to_period("M")).max())
         for tick in dfs.keys():
-            dfs[tick] = dfs[tick].resample(nyse_bme).last()
+            months = dfs[tick].index.to_period("M")
+            dfs[tick].index = pd.DatetimeIndex(months.map(month_ends), name=dfs[tick].index.name)
             dfs[tick]["Returns"] = dfs[tick]["Close"].pct_change()
             dfs[tick] = dfs[tick][["Returns"]].copy()
             dfs[tick].rename(columns={"Returns": tick},inplace=True)
@@ -78,11 +80,25 @@ class Datasets():
 
     def create_market_caps_dataset(self):
         df = self._dl.load_market_caps("processed")
-        nyse = mcal.get_calendar('NYSE')
-        nyse_bme = pd.offsets.CustomBusinessMonthEnd(calendar=nyse.regular_holidays)
-        df = df.resample(nyse_bme).last()
+        nyse = mcal.get_calendar("NYSE")
+        schedule = nyse.schedule(start_date="1960-01-01",end_date="2030-12-31")
+        month_ends = (schedule.index.to_series().groupby(schedule.index.to_period("M")).max())
+        months = df.index.to_period("M")
+        df.index = pd.DatetimeIndex(months.map(month_ends), name=df.index.name)
         df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
         df = df[self._order]
         full_path = os.path.join(self._path, "market_caps.csv")
         df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
         print("Market caps dataset created succesfully")
+
+    def create_fama_dataset(self):
+        df = self._dl.load_fama("clean")
+        nyse = mcal.get_calendar("NYSE")
+        schedule = nyse.schedule(start_date="1960-01-01",end_date="2030-12-31")
+        month_ends = (schedule.index.to_series().groupby(schedule.index.to_period("M")).max())
+        months = df.index.to_period("M")
+        df.index = pd.DatetimeIndex(months.map(month_ends), name=df.index.name)
+        df = df[(df.index >= "2010-12-31") & (df.index <= "2025-12-31")]
+        full_path = os.path.join(self._path, "fama.csv")
+        df.to_csv(full_path, index=True, date_format="%Y-%m-%d")
+        print("Fama french 5 factors dataset created succesfully")

@@ -18,9 +18,11 @@ class FeatureCreation():
     def _features_engineering(self,df,ticker):
         df["Ticker"] = ticker
         df.dropna(how='any', inplace=True)
-        nyse = mcal.get_calendar('NYSE')
-        nyse_bme = pd.offsets.CustomBusinessMonthEnd(calendar=nyse.regular_holidays)
-        df = df.resample(nyse_bme).last()
+        nyse = mcal.get_calendar("NYSE")
+        schedule = nyse.schedule(start_date="1960-01-01",end_date="2030-12-31")
+        month_ends = (schedule.index.to_series().groupby(schedule.index.to_period("M")).max())
+        months = df.index.to_period("M")
+        df.index = pd.DatetimeIndex(months.map(month_ends), name=df.index.name)
         df["Target"] = (np.log(df["Close"] / df["Close"].shift(1))).shift(-1)
         df.dropna(subset=["Target"], inplace=True)
         features = [
@@ -54,7 +56,7 @@ class FeatureCreation():
     def create_features(self):
         directory = "/home/jaime/Documents/TFG/data/processed"
         for filename in os.listdir(directory):
-            if filename not in ["GSPC.csv","market_caps.csv","GS3M.csv"]:
+            if filename not in ["GSPC.csv","market_caps.csv","fama.csv"]:
                 full_path = os.path.join(directory, filename)
                 df = pd.read_csv(full_path, header=0, index_col=0, parse_dates=True)
                 file = Path(filename)
