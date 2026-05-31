@@ -3,6 +3,8 @@ from src.utils.plotting import Plotter
 from src.models.create_models import lin_reg
 from src.models.create_hpt_search import *
 from src.portfolio.bl_optimization import BlackLitterman
+from src.backtest.monte_carlo import MonteCarlo
+from src.utils.metrics import cagr
 import pandas as pd
 import numpy as np
 
@@ -24,8 +26,7 @@ class Backtest():
         self._fama = f[(f.index > self._first_month) & (f.index <= "2025-12-31")]
         self._rfr = self._fama["RF"]
         self._plotter = Plotter()
-
-
+        self._monte_carlo = MonteCarlo()
 
     def snp500_backtest(self):
         daily_returns = []
@@ -50,6 +51,7 @@ class Backtest():
 
         self._snp500_daily_returns = daily_returns
         self._snp500_monthly_returns = monthly_returns
+        self._snp500_cagr = cagr(total_portfolio_value, len(self._backtest_month) / 12)
 
         daily_res = pd.DataFrame({"Portfolio Growth" : daily_portfolio_values, "Returns" : daily_returns}, index=self._backtest_days)
 
@@ -91,6 +93,8 @@ class Backtest():
         self._plotter.plot_equity_cruve("Equally Weighted Portfolio", daily_res, self._snp500_daily_returns)
         self._plotter.plot_metrics("Equally Weighted Portfolio", 1, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama)
         self._plotter.plot_dd("Equally Weighted Portfolio", daily_portfolio_values, daily_res)
+
+        self._monte_carlo.monte_carlo_path_sim("Equally Weighted Portfolio", daily_res, self._rfr, self._snp500_cagr, self._backtest_months)
 
     def mvo_portfolio_backtest(self):
         daily_returns = []
@@ -135,7 +139,9 @@ class Backtest():
         self._plotter.plot_equity_cruve("MVO Portfolio", daily_res, self._snp500_daily_returns)
         self._plotter.plot_metrics("MVO Portfolio", 1, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama)
         self._plotter.plot_dd("MVO Portfolio", daily_portfolio_values, daily_res)
-        
+
+        self._monte_carlo.monte_carlo_path_sim("MVO Portfolio", daily_res, self._rfr, self._snp500_cagr, self._backtest_months)
+
     def portfolio_backtest(self, title, model_type = 0, grid = 0):
         if model_type and model_type != "random":
             if grid:
@@ -216,9 +222,10 @@ class Backtest():
                 
 
         daily_res = pd.DataFrame({"Portfolio Growth" : daily_portfolio_values, "Returns" : daily_returns}, index=self._backtest_days)
-        monthly_res = pd.DataFrame({"Portfolio Growth" : monthly_portfolio_values, "Returns" : monthly_returns}, index=self._backtest_months[1:])
 
         self._plotter.plot_equity_cruve(title, daily_res, self._snp500_daily_returns)
         plot_type = 2 if model_type is None or model_type == "random" else 3
         self._plotter.plot_metrics(title, plot_type, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama, pred_returns, true_returns, pred_z_scores, true_z_scores)
         self._plotter.plot_dd(title, daily_portfolio_values, daily_res)
+
+        self._monte_carlo.monte_carlo_path_sim(title, daily_res, self._rfr, self._snp500_cagr, self._backtest_months)
