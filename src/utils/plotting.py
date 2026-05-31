@@ -57,6 +57,7 @@ class Plotter():
         green_ratio, red_ratio = green_red_months(monthly_returns)
         avg_green, avg_red = monthly_averages(monthly_returns)
         dds = drawdowns(daily_portfolio_values)
+        max_cap_loss = max_capital_loss(daily_portfolio_values)
         max_dd = max_drawdown(dds)
         average_dd_depth = average_drawdown_depth(dds)
         max_dd_duration = max_drawdown_duration(daily_portfolio_values)
@@ -83,6 +84,7 @@ class Plotter():
             ("Negative Months", f"{red_ratio:.2%}"),
             ("Avg Positive Month", f"{avg_green:.2%}"),
             ("Avg Negative Month", f"{avg_red:.2%}"),
+            ("Max Capital Loss", f"{max_cap_loss:.2%}"),
             ("Max drawdown", f"{max_dd:.2%}"),
             ("Avg drawdown", f"{average_dd_depth:.2%}"),
             ("Max DD duration", f"{max_dd_duration:.0f} days"),
@@ -145,7 +147,7 @@ class Plotter():
     def plot_dd(self, title, daily_portfolio_values, daily_res):
         dds = drawdowns(daily_portfolio_values)
         drawdown_pct = dds.to_numpy() * 100
-        drawdown_pct = pd.Series(drawdown_pct, index=daily_res.index)
+        drawdown_pct = pd.Series(drawdown_pct[1:], index=daily_res.index)
         drawdown_pct.iloc[0] = 0
 
         fig_dd, ax_dd = plt.subplots(figsize=(16, 4.8), constrained_layout=True)
