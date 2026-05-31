@@ -56,8 +56,13 @@ def monthly_averages(monthly_returns):
 
     return green_avg, red_avg
 
+def max_capital_loss(portfolio_values):
+    
+    return min(0.0, np.min(portfolio_values) - 1.0)
+
 def drawdowns(portfolio_values):
     portfolio_values = pd.Series(portfolio_values)
+    portfolio_values = pd.concat([pd.Series([1]), portfolio_values], ignore_index=True)
     running_peak = portfolio_values.cummax()
     drawdowns = (portfolio_values / running_peak) - 1
 
