@@ -176,3 +176,78 @@ def model_precision(preds, true):
     da = np.mean(np.sign(preds) == np.sign(true))
 
     return np.mean(ics), np.mean(mses), da
+
+def calculate_final_portfolio(monthly_returns):
+    final_value = 1 * np.prod(1 + monthly_returns)
+
+    return final_value
+
+def calculate_daily_portfolio_values(monthly_returns):
+    daily_portfolio_values = np.cumprod(1 + monthly_returns)
+
+    return daily_portfolio_values
+
+def total_return_stats(total_return_values):
+
+    return np.mean(total_return_values), np.median(total_return_values)
+
+def total_return_quantiles(total_return_values):
+    total_return_values = np.array(total_return_values)
+
+    min_return = np.min(total_return_values)
+    stress = np.quantile(total_return_values, 0.005)
+    bad = np.quantile(total_return_values, 0.05)
+    typical = np.quantile(total_return_values, 0.5)
+    good = np.quantile(total_return_values, 0.95)
+    upside = np.quantile(total_return_values, 0.995)
+    max_return = np.max(total_return_values)
+
+    return min_return, stress, bad, typical, good, upside, max_return
+
+def mean_port_volatility(portfolio_volatility_values):
+
+    return np.mean(portfolio_volatility_values)
+
+def mean_ulcer_index(ulcer_index_values):
+
+    return np.mean(ulcer_index_values)
+
+def mean_avg_dd_duration(avg_dd_duration_values):
+
+    return np.mean(avg_dd_duration_values)
+
+def prob_cagr_over_null(cagr_values):
+    cagr_values = np.array(cagr_values)
+
+    return len(cagr_values[cagr_values > 0]) / len(cagr_values)
+
+def prob_cagr_over_benchmark(cagr_values, benchmark_cagr_value):
+    cagr_values = np.array(cagr_values)
+
+    return len(cagr_values[cagr_values > benchmark_cagr_value]) / len(cagr_values)
+
+def prob_sharpe_over_1(sharpe_values):
+    sharpe_values = np.array(sharpe_values)
+
+    return len(sharpe_values[sharpe_values > 1]) / len(sharpe_values)
+
+def prob_max_dd_over(max_dd_values, threshold):
+    max_dd_values = np.array(max_dd_values)
+
+    return len(max_dd_values[max_dd_values < threshold]) / len(max_dd_values)
+
+def prob_avg_dd_duration_over_365(avg_dd_duration_values):
+    avg_dd_duration_values = np.array(avg_dd_duration_values)
+
+    return len(avg_dd_duration_values[avg_dd_duration_values > 365]) / len(avg_dd_duration_values)
+
+def prob_negative_return(final_portfolio_values):
+    final_portfolio_values = np.array(final_portfolio_values)
+
+    return len(final_portfolio_values[final_portfolio_values < 1]) / len(final_portfolio_values)
+
+def prob_loss_over(final_portfolio_values, threshold):
+    final_portfolio_values = np.array(final_portfolio_values)
+    loss = 1 - final_portfolio_values
+
+    return len(loss[loss > threshold]) / len(loss)
