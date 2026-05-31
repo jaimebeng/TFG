@@ -61,7 +61,7 @@ class RollingOptunaSearch():
             pruner=self.pruner
         )
 
-        optuna_jobs = 1 if self.parallel_windows else -1
+        optuna_jobs = -1
 
         study.optimize(self._build_objective(X, y, lens), n_trials=self.n_trials,n_jobs=optuna_jobs)
 
