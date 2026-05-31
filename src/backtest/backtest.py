@@ -51,7 +51,7 @@ class Backtest():
 
         self._snp500_daily_returns = daily_returns
         self._snp500_monthly_returns = monthly_returns
-        self._snp500_cagr = cagr(total_portfolio_value, len(self._backtest_month) / 12)
+        self._snp500_cagr = cagr(total_portfolio_value, len(self._backtest_months) / 12)
 
         daily_res = pd.DataFrame({"Portfolio Growth" : daily_portfolio_values, "Returns" : daily_returns}, index=self._backtest_days)
 
