@@ -251,7 +251,7 @@ class Plotter():
         fig_table.savefig(os.path.join(path, f"{title.replace(' ', '_')}_mc_metrics.png"), dpi=300, bbox_inches="tight")
         plt.close(fig_table)
 
-    def plot_mc_histograms(self, title, total_return_values, sharpe_ratio_values, max_dd_values, cvar_values, average_dd_duration_values):
+    def plot_mc_histograms(self, plot_title, total_return_values, sharpe_ratio_values, max_dd_values, cvar_values, average_dd_duration_values):
 
         histogram_data = [
             ("Total Return Value", total_return_values, "#0B5CAD"),
@@ -277,10 +277,10 @@ class Plotter():
 
         axes[-1].axis("off")
         
-        fig_hist.suptitle(f"{title} Monte Carlo Histograms", fontsize=16, fontweight="bold")
-        path = os.path.join(self._output_path, title.replace(' ', '_'))
+        fig_hist.suptitle(f"{plot_title} Monte Carlo Histograms", fontsize=16, fontweight="bold")
+        path = os.path.join(self._output_path, plot_title.replace(' ', '_'))
         os.makedirs(path, exist_ok=True)
-        fig_hist.savefig(os.path.join(path, f"{title.replace(' ', '_')}_mc_histograms.png"), dpi=300, bbox_inches="tight")
+        fig_hist.savefig(os.path.join(path, f"{plot_title.replace(' ', '_')}_mc_histograms.png"), dpi=300, bbox_inches="tight")
         plt.close(fig_hist)
 
     def plot_mc_paths(self, title, daily_portfolios_values, backtest_months):

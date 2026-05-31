@@ -8,19 +8,19 @@ SEARCH_REGISTRY = {
         "method": "grid",
         "builder": lasso_reg,
         "wrapper": RollingGridSearch,
-        "extra_args": {"window": 12, "verbose": 0},
+        "extra_args": {"min_train_size": 12, "verbose": 0},
     },
     "ridgereg": {
         "method": "grid",
         "builder": ridge_reg,
         "wrapper": RollingGridSearch,
-        "extra_args": {"window": 12, "verbose": 0},
+        "extra_args": {"min_train_size": 12, "verbose": 0},
     },
     "elasticnet": {
         "method": "grid",
         "builder": elastic_net,
         "wrapper": RollingGridSearch,
-        "extra_args": {"window": 12, "verbose": 0},
+        "extra_args": {"min_train_size": 12, "verbose": 0},
     },
 
     "rf": {
