@@ -119,7 +119,7 @@ class Plotter():
             metrics.append(("Model DA", f"{model_DA:.2f}"))
 
         metrics_df = pd.DataFrame(metrics, columns=["Metric", "Value"])
-        fig_table, ax_table = plt.subplots(figsize=(10, 5.2), constrained_layout=True)
+        fig_table, ax_table = plt.subplots(figsize=(10, 6.8), constrained_layout=True)
         ax_table.axis("off")
         table = ax_table.table(
             cellText=metrics_df.values,
@@ -128,10 +128,11 @@ class Plotter():
             colLoc="left",
             loc="center",
             colWidths=[0.35, 0.2],
+            bbox=[0, 0, 1, 0.9],
         )
         table.auto_set_font_size(False)
         table.set_fontsize(10.5)
-        table.scale(1, 1.2)
+        table.scale(1, 1.28)
 
         for (row, col), cell in table.get_celld().items():
             cell.set_edgecolor("#D0D7DE")
@@ -142,7 +143,7 @@ class Plotter():
                 cell.set_facecolor("#F8FAFC")
             else:
                 cell.set_facecolor("white")
-        ax_table.set_title(f"{title} Metrics", fontsize=14, fontweight="bold", pad=12)
+        fig_table.suptitle(f"{title} Metrics", fontsize=14, fontweight="bold", y=0.98)
         path = os.path.join(self._output_path, title.replace(' ', '_'))
         os.makedirs(path, exist_ok=True)
         fig_table.savefig(os.path.join(path, f"{title.replace(' ', '_')}_metrics.png"), dpi=300, bbox_inches="tight")
@@ -221,7 +222,7 @@ class Plotter():
             columns=["Metric", "Value"],
         )
 
-        fig_table, ax_table = plt.subplots(figsize=(10, 6.5), constrained_layout=True)
+        fig_table, ax_table = plt.subplots(figsize=(10, 8.0), constrained_layout=True)
         ax_table.axis("off")
         table = ax_table.table(
             cellText=summary_metrics.values,
@@ -230,10 +231,11 @@ class Plotter():
             colLoc="left",
             loc="center",
             colWidths=[0.62, 0.22],
+            bbox=[0, 0, 1, 0.9],
         )
         table.auto_set_font_size(False)
         table.set_fontsize(10.5)
-        table.scale(1, 1.18)
+        table.scale(1, 1.24)
 
         for (row, col), cell in table.get_celld().items():
             cell.set_edgecolor("#D0D7DE")
@@ -245,7 +247,7 @@ class Plotter():
             else:
                 cell.set_facecolor("white")
 
-        ax_table.set_title(f"{title} Monte Carlo Metrics", fontsize=14, fontweight="bold", pad=12)
+        fig_table.suptitle(f"{title} Monte Carlo Metrics", fontsize=14, fontweight="bold", y=0.98)
         path = os.path.join(self._output_path, title.replace(' ', '_'))
         os.makedirs(path, exist_ok=True)
         fig_table.savefig(os.path.join(path, f"{title.replace(' ', '_')}_mc_metrics.png"), dpi=300, bbox_inches="tight")
