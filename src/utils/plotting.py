@@ -46,7 +46,7 @@ class Plotter():
         ax.spines["right"].set_visible(False)
         ax.legend(loc="upper left", frameon=True)
 
-        fig.savefig(os.path.join(self._output_path, f"{title.replace(" ", "_")}_backtest.png"), dpi=300, bbox_inches="tight")
+        fig.savefig(os.path.join(self._output_path, f"{title.replace(' ', '_')}_backtest.png"), dpi=300, bbox_inches="tight")
         plt.close(fig)
 
     def plot_metrics(self, title, plot_type, monthly_returns, rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, backtest_months, fama = None, pred_returns = None, true_returns = None, pred_z_scores = None, true_z_scores = None):
@@ -95,7 +95,7 @@ class Plotter():
             ("t-stat p-value", f"{t_p_value:.4f}"),
         ]
 
-        if plot_type > 1:
+        if plot_type > 0:
             metrics.append(("Market beta", f"{betas['Mkt-RF']:.2f}"))
             metrics.append(("Size beta", f"{betas['SMB']:.2f}"))
             metrics.append(("Value beta", f"{betas['HML']:.2f}"))
@@ -103,12 +103,12 @@ class Plotter():
             metrics.append(("Investment beta", f"{betas['CMA']:.2f}"))
             metrics.append(("Alpha", f"{alpha:.2f}"))
             metrics.append(("Alpha p-value", f"{a_p_value:.4f}"))
-        if plot_type > 2:
+        if plot_type > 1:
             metrics.append(("Black Litterman IC", f"{bl_IC:.2f}"))
             metrics.append(("Black Litterman Normalized MSE", f"{bl_MSE_norm:.2f} ({bl_MSE_raw:.4f})"))
             metrics.append(("Black Litterman DA", f"{bl_DA:.2f}"))
             metrics.append(("Black Litterman Thiel's U2", f"{bl_U2:.2f}"))
-        if plot_type > 3:
+        if plot_type > 2:
             metrics.append(("Model IC", f"{model_IC:.2f}"))
             metrics.append(("Model MSE", f"{model_MSE:.2f}"))
             metrics.append(("Model DA", f"{model_DA:.2f}"))
@@ -139,7 +139,7 @@ class Plotter():
                 cell.set_facecolor("white")
         ax_table.set_title(f"{title} Metrics", fontsize=14, fontweight="bold", pad=12)
 
-        fig_table.savefig(os.path.join(self._output_path, f"{title.replace(" ", "_")}_metrics.png"), dpi=300, bbox_inches="tight")
+        fig_table.savefig(os.path.join(self._output_path, f"{title.replace(' ', '_')}_metrics.png"), dpi=300, bbox_inches="tight")
         plt.close(fig_table)
 
     def plot_dd(self, title, daily_portfolio_values, daily_res):
@@ -167,5 +167,5 @@ class Plotter():
         ax_dd.spines["right"].set_visible(False)
         ax_dd.legend(loc="lower left", frameon=True)
 
-        fig_dd.savefig(os.path.join(self._output_path, f"{title.replace(" ", "_")}_dd.png"), dpi=300, bbox_inches="tight")
+        fig_dd.savefig(os.path.join(self._output_path, f"{title.replace(' ', '_')}_dd.png"), dpi=300, bbox_inches="tight")
         plt.close(fig_dd)

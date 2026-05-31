@@ -20,7 +20,8 @@ class Backtest():
         self._backtest_days = self._daily_stock_returns[self._daily_stock_returns.index > self._first_month].index.unique()
         self._first_day = self._backtest[self._backtest.index <= self._backtest_days[0]].index[-1]
         self._snp500 = self._dl.load_dataset("GSPC")
-        self._fama = self._dl.load_dataset("fama")
+        f = self._dl.load_dataset("fama")
+        self._fama = f[(f.index > self._first_month) & (f.index <= "2025-12-31")]
         self._rfr = self._fama["RF"]
         self._plotter = Plotter()
 
@@ -91,7 +92,7 @@ class Backtest():
         self._plotter.plot_metrics("Equally Weighted Portfolio", 1, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama)
         self._plotter.plot_dd("Equally Weighted Portfolio", daily_portfolio_values, daily_res)
 
-    def mvo_portfolio_backtest(self, title):
+    def mvo_portfolio_backtest(self):
         daily_returns = []
         monthly_returns = []
         daily_portfolio_values = []
@@ -131,9 +132,9 @@ class Backtest():
 
         daily_res = pd.DataFrame({"Portfolio Growth" : daily_portfolio_values, "Returns" : daily_returns}, index=self._backtest_days)
 
-        self._plotter.plot_equity_cruve(title, daily_res, self._snp500_daily_returns)
-        self._plotter.plot_metrics(title, 1, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama, pred_returns, true_returns, pred_z_scores, true_z_scores)
-        self._plotter.plot_dd(title, daily_portfolio_values, daily_res)
+        self._plotter.plot_equity_cruve("MVO Portfolio", daily_res, self._snp500_daily_returns)
+        self._plotter.plot_metrics("MVO Portfolio", 1, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama)
+        self._plotter.plot_dd("MVO Portfolio", daily_portfolio_values, daily_res)
         
     def portfolio_backtest(self, title, model_type = 0, grid = 0):
         if model_type and model_type != "random":
@@ -160,7 +161,8 @@ class Backtest():
                     X, y = self._dl.load_dataset("hpt", prev_day)
                     grid.fit(X,y)
                     model = grid.best_model_
-                
+                else:
+                    model.fit(self._backtest[self._backtest.index < self._first_day][features].to_numpy(), self._backtest[self._backtest.index < self._first_day]["Target"].to_numpy())
                 pred = model.predict(self._backtest.loc[self._first_day][features].values)
                 pred_z_scores = [pred]
                 true_z_scores = [self._backtest.loc[self._first_day]["Target"].to_numpy()]
