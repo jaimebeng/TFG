@@ -52,7 +52,7 @@ class Plotter():
         fig.savefig(os.path.join(path, f"{title.replace(' ', '_')}_backtest.png"), dpi=300, bbox_inches="tight")
         plt.close(fig)
 
-    def plot_metrics(self, title, plot_type, monthly_returns, rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, backtest_months, fama = None, pred_returns = None, true_returns = None, pred_z_scores = None, true_z_scores = None):
+    def plot_metrics(self, title, plot_type, monthly_returns, rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, backtest_months, fama = None, total_trans_costs = None, pred_returns = None, true_returns = None, pred_z_scores = None, true_z_scores = None):
 
         portfolio_volatility_value = portfolio_volatility(monthly_returns)
         sharpe_ratio_value = sharpe_ratio(monthly_returns, rfr)
@@ -101,6 +101,7 @@ class Plotter():
         ]
 
         if plot_type > 0:
+            metrics.insert(1, ("Total Transaction Costs", f"{total_trans_costs:.2%}"))
             metrics.append(("Market beta", f"{betas['Mkt-RF']:.2f}"))
             metrics.append(("Size beta", f"{betas['SMB']:.2f}"))
             metrics.append(("Value beta", f"{betas['HML']:.2f}"))
