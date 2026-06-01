@@ -275,7 +275,7 @@ class Backtest():
         daily_res = pd.DataFrame({"Portfolio Growth" : daily_portfolio_values, "Returns" : daily_returns}, index=self._backtest_days)
 
         self._plotter.plot_equity_cruve(title, daily_res, self._snp500_daily_returns)
-        plot_type = 2 if model_type is None or model_type == "random" else 3
+        plot_type = 2 if model_type == 0 or model_type == "random" else 3
         self._plotter.plot_metrics(title, plot_type, monthly_returns, self._rfr, daily_portfolio_values, net_total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama, total_trans_costs, pred_returns, true_returns, pred_z_scores, true_z_scores)
         self._plotter.plot_dd(title, daily_portfolio_values, daily_res)
 
