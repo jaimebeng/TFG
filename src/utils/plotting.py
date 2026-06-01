@@ -325,7 +325,7 @@ class Plotter():
         pad = max(1.0, (all_max - all_min) * 0.03)
         ax_paths.set_ylim(bottom=all_min - pad, top=all_max + pad)
         ax_paths.grid(True, alpha=0.18)
-        ax_paths.legend(frameon=True)
+        ax_paths.legend(loc='upper left', frameon=True)
         path = os.path.join(self._output_path, title.replace(' ', '_'))
         os.makedirs(path, exist_ok=True)
         fig_paths.savefig(os.path.join(path, f"{title.replace(' ', '_')}_mc_paths.png"), dpi=300, bbox_inches="tight")

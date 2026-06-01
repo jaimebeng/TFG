@@ -88,7 +88,7 @@ class BlackLitterman():
         mean_ic = np.mean(ics)
         std_ic = np.std(ics)
         var_ic = std_ic ** 2
-        signal_strength = mean_ic ** 2
+        signal_strength = np.power(mean_ic, 1)
         noise = var_ic / (np.mean(np.abs(ics)) + 1e-8)
 
         confidence = signal_strength / noise
