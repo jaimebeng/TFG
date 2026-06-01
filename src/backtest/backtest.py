@@ -8,6 +8,9 @@ from src.utils.metrics import cagr
 import pandas as pd
 import numpy as np
 
+TRANSACTION_COSTS = 0.0005
+SLIPPAGE = 0.0005
+
 class Backtest():
 
     def __init__(self):
@@ -58,40 +61,61 @@ class Backtest():
         self._plotter.plot_equity_cruve("S&P 500", daily_res, self._snp500_daily_returns)
         self._plotter.plot_metrics("S&P 500", 0, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months)
         self._plotter.plot_dd("S&P 500", daily_portfolio_values, daily_res)
+
+    def _calculate_turnover(self, new_weights, old_weights):
+        turnover = 0.5 * np.sum(np.abs(np.array(new_weights) - np.array(old_weights)))
+
+        return turnover
         
     def eq_portfolio_backtest(self):
         daily_returns = []
         monthly_returns = []
         daily_portfolio_values = []
         monthly_portfolio_values = []
-        total_portfolio_value = 1
+        net_total_portfolio_value = 1
+        gross_total_portfolio_value = 1
         monthly_start_value = 1
         weights = np.ones(30) / 30
-        positions = weights * total_portfolio_value
+        turnover = self._calculate_turnover(weights, np.zeros(30))
+        trans_costs = net_total_portfolio_value * turnover * (TRANSACTION_COSTS + SLIPPAGE)
+        net_total_portfolio_value -= trans_costs
+        net_positions = weights * net_total_portfolio_value
+        gross_positions = weights * gross_total_portfolio_value
 
         for day in self._backtest_days:
             
             r = self._daily_stock_returns.loc[day].values 
-            pnl = np.sum(positions * r)
-            portfolio_return = pnl / total_portfolio_value
-            daily_returns.append(portfolio_return)
-            total_portfolio_value += pnl
-            daily_portfolio_values.append(total_portfolio_value)
-            positions = positions * (1 + r)
-            weights = positions / total_portfolio_value
+            net_pnl = np.sum(net_positions * r)
+            net_portfolio_return = net_pnl / net_total_portfolio_value
+            daily_returns.append(net_portfolio_return)
+            net_total_portfolio_value += net_pnl
+            daily_portfolio_values.append(net_total_portfolio_value)
+            net_positions = net_positions * (1 + r)
+            weights = net_positions / net_total_portfolio_value
+            gross_pnl = np.sum(gross_positions * r)
+            gross_total_portfolio_value += gross_pnl
+            gross_positions = gross_positions * (1 + r)
+            
 
             if day in self._backtest_months:
-                monthly_return = (total_portfolio_value / monthly_start_value) - 1
+                monthly_return = (net_total_portfolio_value / monthly_start_value) - 1
                 monthly_returns.append(monthly_return)
-                monthly_portfolio_values.append(total_portfolio_value)
-                monthly_start_value = total_portfolio_value
+                monthly_portfolio_values.append(net_total_portfolio_value)
+                monthly_start_value = net_total_portfolio_value
+                old_weights = weights
                 weights = np.ones(30) / 30
-                positions = weights * total_portfolio_value
+                turnover = self._calculate_turnover(weights, old_weights)
+                trans_costs = net_total_portfolio_value * turnover * (TRANSACTION_COSTS + SLIPPAGE)
+                net_total_portfolio_value -= trans_costs
+                net_positions = weights * net_total_portfolio_value
+                gross_positions = weights * gross_total_portfolio_value
 
+
+        total_trans_costs = gross_total_portfolio_value - net_total_portfolio_value
         daily_res = pd.DataFrame({"Portfolio Growth" : daily_portfolio_values, "Returns" : daily_returns}, index=self._backtest_days)
         
         self._plotter.plot_equity_cruve("Equally Weighted Portfolio", daily_res, self._snp500_daily_returns)
-        self._plotter.plot_metrics("Equally Weighted Portfolio", 1, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama)
+        self._plotter.plot_metrics("Equally Weighted Portfolio", 1, monthly_returns, self._rfr, daily_portfolio_values, net_total_portfolio_value, monthly_portfolio_values, self._backtest_months, fama=self._fama, total_trans_costs=total_trans_costs)
         self._plotter.plot_dd("Equally Weighted Portfolio", daily_portfolio_values, daily_res)
 
         self._monte_carlo.monte_carlo_path_sim("Equally Weighted Portfolio", daily_res, self._rfr, self._snp500_cagr, self._backtest_months)
@@ -101,43 +125,57 @@ class Backtest():
         monthly_returns = []
         daily_portfolio_values = []
         monthly_portfolio_values = []
-        total_portfolio_value = 1
+        net_total_portfolio_value = 1
+        gross_total_portfolio_value = 1
         monthly_start_value = 1
         bl = BlackLitterman()
         first_day = self._backtest[self._backtest.index <= self._backtest_days[0]].index[-1]
         preds = pd.DataFrame({"Ticker": self._backtest.loc[first_day]["Ticker"]})
         preds["Predictions"] = self._monthly_stock_returns.loc[first_day].values
         weights, expected_returns = bl.optimize_portfolio(self._daily_stock_returns[self._daily_stock_returns.index <= first_day].tail(504), preds=preds)
-        positions = weights * total_portfolio_value
+        turnover = self._calculate_turnover(weights, np.zeros(30))
+        trans_costs = net_total_portfolio_value * turnover * (TRANSACTION_COSTS + SLIPPAGE)
+        net_total_portfolio_value -= trans_costs
+        net_positions = weights * net_total_portfolio_value
+        gross_positions = weights * gross_total_portfolio_value
         pred_returns = []
         true_returns = []
 
         for day in self._backtest_days:
 
             r = self._daily_stock_returns.loc[day].values 
-            pnl = np.sum(positions * r)
-            portfolio_return = pnl / total_portfolio_value
-            daily_returns.append(portfolio_return)
-            total_portfolio_value += pnl
-            daily_portfolio_values.append(total_portfolio_value)
-            positions = positions * (1 + r)
-            weights = positions / total_portfolio_value
+            net_pnl = np.sum(net_positions * r)
+            net_portfolio_return = net_pnl / net_total_portfolio_value
+            daily_returns.append(net_portfolio_return)
+            net_total_portfolio_value += net_pnl
+            daily_portfolio_values.append(net_total_portfolio_value)
+            net_positions = net_positions * (1 + r)
+            weights = net_positions / net_total_portfolio_value
+            gross_pnl = np.sum(gross_positions * r)
+            gross_total_portfolio_value += gross_pnl
+            gross_positions = gross_positions * (1 + r)
 
             if day in self._backtest_months:
-                monthly_return = (total_portfolio_value / monthly_start_value) - 1
+                monthly_return = (net_total_portfolio_value / monthly_start_value) - 1
                 monthly_returns.append(monthly_return)
-                monthly_portfolio_values.append(total_portfolio_value)
-                monthly_start_value = total_portfolio_value
+                monthly_portfolio_values.append(net_total_portfolio_value)
+                monthly_start_value = net_total_portfolio_value
                 pred_returns.append(expected_returns)
                 true_returns.append(self._monthly_stock_returns.loc[day].values)
                 preds["Predictions"] = self._monthly_stock_returns.loc[day].values
+                old_weights = weights
                 weights, expected_returns = bl.optimize_portfolio(self._daily_stock_returns[self._daily_stock_returns.index <= day].tail(504), preds=preds)
-                positions = weights * total_portfolio_value
+                turnover = self._calculate_turnover(weights, old_weights)
+                trans_costs = net_total_portfolio_value * turnover * (TRANSACTION_COSTS + SLIPPAGE)
+                net_total_portfolio_value -= trans_costs
+                net_positions = weights * net_total_portfolio_value
+                gross_positions = weights * gross_total_portfolio_value
 
+        total_trans_costs = gross_total_portfolio_value - net_total_portfolio_value
         daily_res = pd.DataFrame({"Portfolio Growth" : daily_portfolio_values, "Returns" : daily_returns}, index=self._backtest_days)
 
         self._plotter.plot_equity_cruve("MVO Portfolio", daily_res, self._snp500_daily_returns)
-        self._plotter.plot_metrics("MVO Portfolio", 1, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama)
+        self._plotter.plot_metrics("MVO Portfolio", 1, monthly_returns, self._rfr, daily_portfolio_values, net_total_portfolio_value, monthly_portfolio_values, self._backtest_months, fama=self._fama, total_trans_costs=total_trans_costs)
         self._plotter.plot_dd("MVO Portfolio", daily_portfolio_values, daily_res)
 
         self._monte_carlo.monte_carlo_path_sim("MVO Portfolio", daily_res, self._rfr, self._snp500_cagr, self._backtest_months)
@@ -153,7 +191,8 @@ class Backtest():
         monthly_returns = []
         daily_portfolio_values = []
         monthly_portfolio_values = []
-        total_portfolio_value = 1
+        net_total_portfolio_value = 1
+        gross_total_portfolio_value = 1
         monthly_start_value = 1
         preds = None
         pred_z_scores = None
@@ -179,26 +218,33 @@ class Backtest():
  
         bl = BlackLitterman()
         weights, expected_returns = bl.optimize_portfolio(self._daily_stock_returns[self._daily_stock_returns.index <= self._first_day].tail(504), self._first_day, preds=preds)
-        positions = weights * total_portfolio_value
+        turnover = self._calculate_turnover(weights, np.zeros(30))
+        trans_costs = net_total_portfolio_value * turnover * (TRANSACTION_COSTS + SLIPPAGE)
+        net_total_portfolio_value -= trans_costs
+        net_positions = weights * net_total_portfolio_value
+        gross_positions = weights * gross_total_portfolio_value
         pred_returns = []
         true_returns = []
 
         for day in self._backtest_days:
 
             r = self._daily_stock_returns.loc[day].values 
-            pnl = np.sum(positions * r)
-            portfolio_return = pnl / total_portfolio_value
-            daily_returns.append(portfolio_return)
-            total_portfolio_value += pnl
-            daily_portfolio_values.append(total_portfolio_value)
-            positions = positions * (1 + r)
-            weights = positions / total_portfolio_value
+            net_pnl = np.sum(net_positions * r)
+            net_portfolio_return = net_pnl / net_total_portfolio_value
+            daily_returns.append(net_portfolio_return)
+            net_total_portfolio_value += net_pnl
+            daily_portfolio_values.append(net_total_portfolio_value)
+            net_positions = net_positions * (1 + r)
+            weights = net_positions / net_total_portfolio_value
+            gross_pnl = np.sum(gross_positions * r)
+            gross_total_portfolio_value += gross_pnl
+            gross_positions = gross_positions * (1 + r)
 
             if day in self._backtest_months:
-                monthly_return = (total_portfolio_value / monthly_start_value) - 1
+                monthly_return = (net_total_portfolio_value / monthly_start_value) - 1
                 monthly_returns.append(monthly_return)
-                monthly_portfolio_values.append(total_portfolio_value)
-                monthly_start_value = total_portfolio_value
+                monthly_portfolio_values.append(net_total_portfolio_value)
+                monthly_start_value = net_total_portfolio_value
                 pred_returns.append(expected_returns)
                 true_returns.append(self._monthly_stock_returns.loc[day].values)
                 if model_type:
@@ -217,15 +263,20 @@ class Backtest():
                     else:
                         pred = np.random.normal(loc=0, scale=1, size=30) 
                     preds["Predictions"] = pred
+                old_weights = weights
                 weights, expected_returns = bl.optimize_portfolio(self._daily_stock_returns[self._daily_stock_returns.index <= day].tail(504), day, preds=preds, y_pred=pred_z_scores, y_true=true_z_scores)
-                positions = weights * total_portfolio_value
+                turnover = self._calculate_turnover(weights, old_weights)
+                trans_costs = net_total_portfolio_value * turnover * (TRANSACTION_COSTS + SLIPPAGE)
+                net_total_portfolio_value -= trans_costs
+                net_positions = weights * net_total_portfolio_value
+                gross_positions = weights * gross_total_portfolio_value
                 
-
+        total_trans_costs = gross_total_portfolio_value - net_total_portfolio_value
         daily_res = pd.DataFrame({"Portfolio Growth" : daily_portfolio_values, "Returns" : daily_returns}, index=self._backtest_days)
 
         self._plotter.plot_equity_cruve(title, daily_res, self._snp500_daily_returns)
         plot_type = 2 if model_type is None or model_type == "random" else 3
-        self._plotter.plot_metrics(title, plot_type, monthly_returns, self._rfr, daily_portfolio_values, total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama, pred_returns, true_returns, pred_z_scores, true_z_scores)
+        self._plotter.plot_metrics(title, plot_type, monthly_returns, self._rfr, daily_portfolio_values, net_total_portfolio_value, monthly_portfolio_values, self._backtest_months, self._fama, total_trans_costs, pred_returns, true_returns, pred_z_scores, true_z_scores)
         self._plotter.plot_dd(title, daily_portfolio_values, daily_res)
 
         self._monte_carlo.monte_carlo_path_sim(title, daily_res, self._rfr, self._snp500_cagr, self._backtest_months)
