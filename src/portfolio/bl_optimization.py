@@ -56,7 +56,7 @@ class BlackLitterman():
         clean_cov_matrix = D @ clean_corr_matrix @ D
         sigma = clean_cov_matrix * 21
 
-        return sigma
+        return sigma, vols
     
     def _calculate_pi(self, date, sigma):
         dl = DataLoad()
@@ -99,13 +99,13 @@ class BlackLitterman():
         return expected_returns
     
     def optimize_portfolio(self, returns_df, date=None, preds = None, y_pred = None, y_true = None, verbose = 0):
-        sigma = self._calculate_sigma(returns_df, verbose)
+        sigma, vols = self._calculate_sigma(returns_df, verbose)
         if date is not None:
             pi = self._calculate_pi(date, sigma)
             if preds is not None:
                 preds = preds.set_index("Ticker")
                 preds = preds.reindex(returns_df.columns, axis=0)
-                Q = preds["Predictions"].to_numpy().reshape(-1,1)
+                Q = preds["Predictions"].to_numpy().reshape(-1,1) * vols.reshape(-1,1)
                 P = np.eye(self._n_assets)
                 omega = self._calculate_omega(sigma, P, y_pred, y_true)
                 expected_returns = self._calculate_expected_returns(sigma, pi, omega, Q, P)
@@ -114,19 +114,13 @@ class BlackLitterman():
         else:
             expected_returns = preds["Predictions"]
 
-        mu = expected_returns
+        mu = np.squeeze(np.asarray(expected_returns))
         weights = cp.Variable(self._n_assets)
         risk = cp.quad_form(weights,sigma)
-        port_returns = weights.T @ mu
+        port_returns = weights @ mu
 
         objective = cp.Maximize(port_returns - ((1/2) * self._gamma * risk))
-        constraints = [
-            weights >= -0.1, 
-            weights <= 0.1, 
-            cp.sum(weights) >= -0.5,
-            cp.sum(weights) <= 0.5,   
-            cp.norm1(weights) <= 2
-        ]
+        constraints = [weights >= -0.1, weights <= 0.1, cp.sum(weights) == 0, cp.norm1(weights) <= 2]
 
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.ECOS)
