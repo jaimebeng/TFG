@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.abspath(".."))
-from src.utils.metrics import bids
+from scipy.stats.mstats import spearmanr
 import optuna
 import numpy as np
 
@@ -10,7 +10,7 @@ class RollingOptunaSearch():
 
     def __init__(self, model_builder, min_train_size=24, n_trials=30, sampler=None, pruner=None, verbose=1):
         self.model_builder = model_builder
-        self.scorer_ = bids
+        self.scorer_ = spearmanr
         self.min_train_size = min_train_size
         self.n_trials = n_trials
         self.verbose = verbose
@@ -34,7 +34,7 @@ class RollingOptunaSearch():
 
                 model_base.fit(Xs[t][:train_len], y[:train_len])
                 y_pred = model_base.predict(Xs[t][train_len:])
-                score = scorer(y_pred, y[train_len:len(Xs[t])])
+                score = scorer(y_pred, y[train_len:len(Xs[t])])[0]
                 scores.append(score)
                 current_mean = np.mean(scores)
 
@@ -43,9 +43,8 @@ class RollingOptunaSearch():
                     raise optuna.exceptions.TrialPruned()
             
             mu = np.mean(scores)
-            sigma = np.std(scores) + 1e-6
+            sigma = np.std(scores) + 1e-8
 
-            # Return the Risk-Adjusted BIDS, this favors high-performing models that don't fluctuate wildly month-to-month
             return mu * (mu / sigma)
         
         return objective
@@ -61,7 +60,7 @@ class RollingOptunaSearch():
             pruner=self.pruner
         )
 
-        optuna_jobs = -1
+        optuna_jobs = 1
 
         study.optimize(self._build_objective(X, y, lens), n_trials=self.n_trials,n_jobs=optuna_jobs)
 

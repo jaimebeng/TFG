@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.abspath(".."))
-from src.utils.metrics import bids
+from scipy.stats.mstats import spearmanr
 from sklearn.base import clone
 from itertools import product
 from joblib import Parallel, delayed
@@ -16,7 +16,7 @@ class RollingGridSearch():
 
         self.model = model
         self.param_grid = param_grid
-        self.scorer_ = bids
+        self.scorer_ = spearmanr
         self.min_train_size = min_train_size
         self.n_jobs = n_jobs
         self.verbose = verbose
@@ -50,12 +50,12 @@ class RollingGridSearch():
             model_step.fit(X_train, y_train)
             y_pred = model_step.predict(X_test)
             
-            score = self.scorer_(y_pred, y_test)
+            score = self.scorer_(y_pred, y_test)[0]
             scores.append(score)
 
         mu = np.mean(scores)
-        sigma = np.std(scores) + 1e-6
-        score = mu * (mu / sigma) # Risk-Adjusted BIDS, will help find more stable parameters, instead of just the peak
+        sigma = np.std(scores) + 1e-8
+        score = mu * (mu / sigma)
         return {"params": params, "score": score}
 
     def fit(self, X, y):
