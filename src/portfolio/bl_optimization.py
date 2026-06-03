@@ -7,11 +7,20 @@ import cvxpy as cp
 
 class BlackLitterman():
 
-    def __init__(self, delta = 2.5, gamma = 2.5, tau = 0.025, n_assets = 30):
+    def __init__(self, delta = 2.5, gamma = 2.5, tau = 0.05, n_assets = 30):
         self._delta = delta
         self._gamma = gamma
         self._tau = tau
         self._n_assets = n_assets
+
+    def _calculate_zscores(self, preds):
+        preds = preds.copy()
+        preds["Ranking"] = preds["Predictions"].rank(ascending=True) 
+        preds["Probabilities"] = (preds["Ranking"] - 0.5) / len(preds["Ranking"])
+        preds["Z-Score"] = norm.ppf(preds["Probabilities"])
+        preds = preds.set_index("Ticker")
+
+        return preds
     
     def _calculate_sigma(self, df, verbose = 0):
         df = df.copy()
@@ -68,6 +77,13 @@ class BlackLitterman():
 
         return pi
     
+    def _calculate_Q(self, vols, z_scores):
+        monthly_vols = vols * np.sqrt(21)
+        z = np.asarray(z_scores).reshape(-1,1)
+        Q = z * monthly_vols.reshape(-1,1)
+
+        return Q
+    
     def _calculate_conf_factor(self, y_preds, y_trues):
         ics = [spearmanr(y_pred,y_true)[0] for y_pred,y_true in zip(y_preds,y_trues)]
         mean_ic = np.mean(ics)
@@ -103,9 +119,9 @@ class BlackLitterman():
         if date is not None:
             pi = self._calculate_pi(date, sigma)
             if preds is not None:
-                preds = preds.set_index("Ticker")
-                preds = preds.reindex(returns_df.columns, axis=0)
-                Q = preds["Predictions"].to_numpy().reshape(-1,1) * vols.reshape(-1,1)
+                results = self._calculate_zscores(preds)
+                results = results.reindex(returns_df.columns, axis=0)
+                Q = self._calculate_Q(vols, results["Z-Score"])
                 P = np.eye(self._n_assets)
                 omega = self._calculate_omega(sigma, P, y_pred, y_true)
                 expected_returns = self._calculate_expected_returns(sigma, pi, omega, Q, P)
