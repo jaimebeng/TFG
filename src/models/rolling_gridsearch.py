@@ -54,9 +54,7 @@ class RollingGridSearch():
             scores.append(score)
 
         mu = np.mean(scores)
-        sigma = np.std(scores) + 1e-8
-        score = mu * (mu / sigma)
-        return {"params": params, "score": score}
+        return {"params": params, "score": mu}
 
     def fit(self, X, y):
         param_list = list(self._param_combinations())

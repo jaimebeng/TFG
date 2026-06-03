@@ -15,7 +15,7 @@ class RollingOptunaSearch():
         self.n_trials = n_trials
         self.verbose = verbose
         self.sampler = sampler or optuna.samplers.TPESampler(multivariate=True, seed=42)
-        self.pruner = pruner or optuna.pruners.SuccessiveHalvingPruner(min_resource=2, reduction_factor=3, min_early_stopping_rate=0)
+        self.pruner = pruner or  optuna.pruners.SuccessiveHalvingPruner(min_resource=7, reduction_factor=3)
 
     def _build_objective(self, Xs, y, lens):
 
@@ -43,9 +43,8 @@ class RollingOptunaSearch():
                     raise optuna.exceptions.TrialPruned()
             
             mu = np.mean(scores)
-            sigma = np.std(scores) + 1e-8
 
-            return mu * (mu / sigma)
+            return mu
         
         return objective
 

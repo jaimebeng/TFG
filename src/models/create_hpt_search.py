@@ -27,12 +27,9 @@ SEARCH_REGISTRY = {
         "method": "optuna",
         "builder": MODEL_REGISTRY["rf"],
         "wrapper": RollingOptunaSearch,
-        "n_trials": 80,
+        "n_trials": 150,
         "sampler": None,
-        "pruner": optuna.pruners.MedianPruner(
-            n_startup_trials=10,
-            n_warmup_steps=15
-        ),
+        "pruner": None,
         "min_train_size": 12,
         "verbose": 0,
     },
@@ -41,12 +38,9 @@ SEARCH_REGISTRY = {
         "method": "optuna",
         "builder": MODEL_REGISTRY["xgboost"],
         "wrapper": RollingOptunaSearch,
-        "n_trials": 80,
-        "sampler": optuna.samplers.TPESampler(seed=42),
-        "pruner": optuna.pruners.MedianPruner(
-            n_startup_trials=10,
-            n_warmup_steps=15
-        ),
+        "n_trials": 150,
+        "sampler": None,
+        "pruner": optuna.pruners.SuccessiveHalvingPruner(min_resource=10, reduction_factor=3),
         "min_train_size": 12,
         "verbose": 0,
     }

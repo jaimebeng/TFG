@@ -7,17 +7,37 @@ import math
 from scipy.stats.mstats import spearmanr
 from scipy.stats import norm
 from sklearn.metrics import mean_squared_error
+import torch
 
-def bids(y_pred, y_true):
+def rank_IC_torch(y_true, y_pred):
+    def _rankdata_avg(x):
+        x = x.contiguous().view(-1).to(dtype=torch.float64)
+        n = x.size(0)
+        vals, idx = torch.sort(x)
+        _, counts = torch.unique_consecutive(vals, return_counts=True)
+        counts = counts.to(device=vals.device)
+        cumsum = torch.cumsum(counts, dim=0)
+        starts = torch.cat((torch.tensor([0], device=vals.device, dtype=cumsum.dtype), cumsum[:-1]))
+        ends = starts + counts - 1
+        avg_ranks = (starts.to(dtype=torch.float64) + ends.to(dtype=torch.float64) + 2.0) / 2.0
+        ranks_sorted = torch.repeat_interleave(avg_ranks, counts)
+        ranks = torch.empty(n, dtype=torch.float64, device=vals.device)
+        ranks[idx] = ranks_sorted
+        return ranks
 
-    rank_ic, _ = spearmanr(y_true,y_pred)
-    if np.isnan(rank_ic):
-        rank_ic = 0
+    t_rank = _rankdata_avg(y_true)
+    p_rank = _rankdata_avg(y_pred)
 
-    directional_accuracy = np.mean(np.sign(y_true) == np.sign(y_pred))
-    da_centered = 2 * (directional_accuracy - 0.5)
+    t_rank_c = t_rank - t_rank.mean()
+    p_rank_c = p_rank - p_rank.mean()
 
-    return 0.6 * rank_ic + 0.4 * da_centered
+    denom = t_rank_c.std(unbiased=False) * p_rank_c.std(unbiased=False)
+    rank_ic = (t_rank_c * p_rank_c).mean() / denom
+
+    if torch.isnan(rank_ic):
+        rank_ic = torch.tensor(0.0, dtype=torch.float64, device=rank_ic.device)
+
+    return rank_ic
 
 def portfolio_volatility(monthly_returns):
 
