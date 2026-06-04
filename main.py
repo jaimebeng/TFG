@@ -81,14 +81,6 @@ def main():
         print("XGBoost backtest complete")
         backtest.pytorch_portfolio_backtest("MLP", "mlp", device=device)
         print("MLP backtest complete")
-        backtest.pytorch_portfolio_backtest("CNN", "cnn", device=device)
-        print("CNN backtest complete")
-        backtest.pytorch_portfolio_backtest("LSTM", "lstm", device=device)
-        print("LSTM backtest complete")
-        backtest.pytorch_portfolio_backtest("CNN + LSTM", "cnn_lstm", device=device)
-        print("CNN + LSTM backtest complete")
-        backtest.pytorch_portfolio_backtest("Transformer", "transformer", device=device)
-        print("CNN backtest complete")
         print("Backtests execution finished successfully")
 
 if __name__ == "__main__":
