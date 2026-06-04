@@ -30,17 +30,17 @@ def main():
         dd.download_tick_data(tickers)
         dd.download_gspc()
         dd.download_market_caps()
-        dd.download_risk_free_rate()
+        dd.download_fama_data()
         print("Data downloaded successfully.")
     if CLEAN:
         cd = CleanData()
         cd.clean_data()
+        cd.clean_fama_data()
         print("Data cleaned successfully.")
     if PROCESS:
         pd = ProcessData()
         pd.process_data()
         pd.process_market_caps()
-        pd.process_risk_free_rate()
         print("Data processed successfully.")
     if FEATURE:
         fc = FeatureCreation()
