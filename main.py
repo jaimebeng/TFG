@@ -48,7 +48,7 @@ def main():
         print("Features engineered successfully.")
     if DATASET:
         ds = Datasets(tickers)
-        ds.create_backtest_dataset()
+        ds.create_model_dataset()
         ds.create_hpt_dataset()
         ds.create_returns_dataset()
         ds.create_snp500_dataset()
