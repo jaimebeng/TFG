@@ -1,3 +1,10 @@
+"""
+Module for constructing Optuna hyperparameter search spaces for PyTorch neural networks.
+Defines builder functions that dynamically sample architectural parameters (layer dimensions,
+channels, attention heads), learning rates, weight decays, dropout rates, and batch sizes
+from predefined ranges using an Optuna trial, returning initialized PyTorch modules.
+"""
+
 from src.models.nn_models import MLP, CNNmodel, LSTMmodel, CNN_LSTM, Transformer
 from ast import literal_eval
 

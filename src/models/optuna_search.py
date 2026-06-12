@@ -1,3 +1,10 @@
+"""
+Module for running hyperparameter optimization via Optuna on shallow machine learning models.
+Features an expanding-window chronological cross-validation structure with built-in
+trial pruning (Successive Halving) to maximize Spearman rank correlation (IC) while reducing
+computational overhead.
+"""
+
 import os
 import sys
 sys.path.append(os.path.abspath(".."))
@@ -7,6 +14,18 @@ import numpy as np
 
 
 class RollingOptunaSearch():
+    """
+    Hyperparameter search wrapper for shallow estimators using Optuna.
+
+    This class:
+    1. Implements an expanding-window chronological cross-validation scheme.
+    2. At each test step, computes the Spearman rank correlation coefficient (IC) between
+       predictions and actual next-month returns.
+    3. Leverages TPESampler and SuccessiveHalvingPruner to search parameters and prune
+       underperforming configurations early based on intermediate average IC values.
+    4. Automatically refits the best discovered parameters on the final complete historical
+       dataset to prepare for final predictions.
+    """
 
     def __init__(self, model_builder, min_train_size=24, n_trials=30, sampler=None, pruner=None, verbose=1):
         self.model_builder = model_builder

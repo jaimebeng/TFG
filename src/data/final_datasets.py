@@ -1,3 +1,10 @@
+"""
+Module for compiling and caching final datasets for backtesting and model training.
+Aggregates and formats stock features, daily/monthly returns, Fama-French 5-factors, and
+S&P 500 benchmarks. Caches expanding-window slices of feature matrices to disk via joblib
+to accelerate sequential hyperparameter optimization runs.
+"""
+
 import numpy as np
 import os
 from src.data.data_loader import DataLoad
@@ -9,6 +16,19 @@ import pandas_market_calendars as mcal
 
 class Datasets():
     """
+    Assembles, formats, and caches final datasets required by the pipeline.
+
+    Specifically, this class implements:
+    1. `create_model_dataset`: Compiles and transforms cross-sectional stock features
+       to produce 'model.csv' for training/prediction.
+    2. `create_hpt_dataset`: Caches pre-sliced expanding-window historical feature
+       matrices (`X_cache.joblib`), target returns (`y_cache.joblib`), and month boundary
+       timestamps (`months.joblib`) to disk to optimize sequential HPT performance.
+    3. `create_returns_dataset`: Generates aligned daily and monthly return matrices
+       across all target assets, filtered and sorted by ticker list.
+    4. `create_snp500_dataset`: Prepares aligned historical returns of the S&P 500 (^GSPC).
+    5. `create_market_caps_dataset`: Compiles aligned historical monthly market capitalization.
+    6. `create_fama_dataset`: Formats and aligns the monthly Fama-French 5-factor dataset.
     """
 
     def __init__(self, order):

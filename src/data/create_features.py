@@ -1,3 +1,11 @@
+"""
+Module for feature selection, engineering, and monthly target return calculation.
+This script resamples daily stock price data to business month-end frequency, aligns
+the index with the actual trading calendar (NYSE), computes the one-month forward log
+return target, and filters the feature space by dropping redundant or raw indicators
+prior to machine learning model training.
+"""
+
 import os
 import pandas as pd
 import numpy as np
@@ -6,9 +14,17 @@ import pandas_market_calendars as mcal
 
 
 class FeatureCreation():
-    """Feature engineering and selection for stock data.
-    Applies resampling, drops underperforming features, and applies log transformations.
-    Saves in data/features.
+    """
+    Handles monthly feature alignment and selection for the stock dataset.
+
+    Specifically, this class:
+    1. Resamples daily stock metrics to business month-end (BME) frequency.
+    2. Aligns the monthly index with NYSE market calendar trading schedules.
+    3. Calculates the target return as the next month's forward log return
+       (representing a ~21 business day forward return).
+    4. Filters the feature space by dropping a predefined list of raw or high-noise
+       features, retaining the engineered predictive factors.
+    5. Saves the selected feature datasets to the 'data/features' directory.
     """
 
     def __init__(self):

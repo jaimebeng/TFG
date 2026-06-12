@@ -1,3 +1,10 @@
+"""
+Module for running hyperparameter optimization via Optuna on PyTorch neural networks.
+Defines training, validation, and evaluation loops using Huber loss, AdamW optimizer,
+and CosineAnnealingLR scheduling. Uses Spearman rank correlation (calculated via torch)
+as the optimization target.
+"""
+
 import torch
 import torch.nn as nn
 import optuna
@@ -8,6 +15,19 @@ import matplotlib.pyplot as plt
 from src.utils.metrics import rank_IC_torch
 
 class RollingOptunaSearchPyTorch():
+    """
+    Hyperparameter search wrapper for non-sequential PyTorch neural networks using Optuna.
+
+    This class:
+    1. Implements an expanding-window chronological cross-validation routine.
+    2. At each test step, instantiates a candidate neural network and trains it using AdamW
+       optimizing a Huber loss function and scheduled via cosine annealing.
+    3. Scores validation performance using an exponential moving average (EMA) of the Spearman
+       rank correlation coefficient (rank IC) between predictions and targets.
+    4. Applies SuccessiveHalvingPruner to early-stop underperforming parameter trials based on
+       chronological step-average validation scores.
+    5. Refits the best found architecture on the full dataset with extended training epochs.
+    """
 
     def __init__(self, model_builder, input_features, device, min_train_size=24, n_trials=30, sampler=None, pruner=None, verbose=1, hpt_epochs=100):
         self.model_builder = model_builder

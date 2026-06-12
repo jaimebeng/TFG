@@ -1,12 +1,17 @@
+"""
+Data cleaning module for raw stock price and factor files.
+Aligns column names, formats indices, and standardizes financial factor scales.
+"""
 import pandas as pd
 import os
 from pathlib import Path
 
 
 class CleanData():
-    """Minimal data cleaner for already well-structured input files.
-    Applies only lightweight column/index formatting adjustments.
-    Saves in data/clean.
+    """Minimal data cleaner for stock price and Fama-French factor datasets.
+
+    Applies lightweight index/column formatting adjustments and standardizes Fama-French
+    factor values before saving clean datasets to disk.
     """
 
     def __init__(self):

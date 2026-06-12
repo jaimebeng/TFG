@@ -1,3 +1,11 @@
+"""
+Module for Black-Litterman asset allocation and Markowitz portfolio optimization.
+Integrates historical return covariance matrices denoised using Marchenko-Pastur spectral
+filtering with capitalization-weighted market equilibrium priors, active model predictions
+mapped to volatility-scaled Z-scores, and historical signal-to-noise ratio confidence weights.
+Solves the resulting constrained optimization problem using CVXPY.
+"""
+
 from src.data.data_loader import DataLoad
 import numpy as np
 import pandas as pd
@@ -6,6 +14,26 @@ import matplotlib.pyplot as plt
 import cvxpy as cp
 
 class BlackLitterman():
+    """
+    Implements the Black-Litterman asset allocation framework and Mean-Variance Optimization.
+
+    Computational Workflow:
+    1. **Marchenko-Pastur Denoising**: Computes empirical correlation matrices and filters out
+       eigenvalues falling below the theoretical noise limit (1 + sqrt(N/T))^2, replacing them
+       with their mean before reconstructing the monthly covariance matrix `sigma`.
+    2. **Implied Market Equilibrium Prior**: Calculates implied prior returns `pi` from market
+       capitalization weights of the 30 assets and a risk aversion parameter `delta`.
+    3. **Active Views**: Maps raw model predictions into ordinal ranks, computes their Gaussian
+       percentiles to obtain Z-scores, and scales these by monthly asset volatilities to get
+       view vector `Q`.
+    4. **Uncertainty Calibration**: Estimates view covariance `omega` based on the historical
+       information coefficient (IC) mean and variance (signal strength relative to noise).
+    5. **Posterior Combination**: Integrates equilibrium prior and active views via Kalman-like
+       updates to calculate posterior expected returns.
+    6. **Portfolio Optimization**: Maximizes expected utility (return minus quadratic risk penalty)
+       subject to dollar-neutral (sum(w) = 0), bounded weights (-10% <= w_i <= 10%), and gross
+       leverage (norm1(w) <= 2) constraints using the ECOS solver.
+    """
 
     def __init__(self, delta = 2.5, gamma = 2.5, tau = 0.05, n_assets = 30):
         self._delta = delta

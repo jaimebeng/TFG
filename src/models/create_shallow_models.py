@@ -1,4 +1,10 @@
-# imports
+"""
+Module for instantiating shallow machine learning regressors and hyperparameter search grids.
+Defines constructors and grids/search spaces for classical linear models (Lasso, Ridge,
+ElasticNet) using scikit-learn, and tree-based ensemble methods (Random Forest, XGBoost)
+using Optuna trial suggestions.
+"""
+
 import os
 import sys
 sys.path.append(os.path.abspath(".."))

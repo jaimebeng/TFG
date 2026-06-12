@@ -1,9 +1,28 @@
+"""
+Module containing PyTorch deep learning architectures for financial forecasting.
+Implements multi-layer perceptrons (MLP), 1D convolutional neural networks (CNN),
+long short-term memory networks (LSTM), hybrid CNN-LSTMs, multi-head attention blocks,
+and Transformer encoders. All models predict a single-valued forward return target.
+"""
+
 import torch.nn as nn
 import torch.nn.functional as F
 import math
 import torch
 
 class MLP(nn.Module):
+    """
+    Multi-Layer Perceptron (MLP) for cross-sectional stock return prediction.
+
+    Architecture:
+    - Dynamic number of hidden linear layers defined by `hidden_layers`.
+    - Choice of activation functions (ReLU, Tanh, GELU).
+    - Kaiming uniform weight initialization for ReLU/Leaky ReLU activations, and
+      Xavier uniform initialization for other activations.
+    - Dropout layers applied to intermediate hidden layers for regularization.
+    - Output layer with 1 unit and Xavier uniform initialization, predicting y.
+    """
+
 
     def __init__(self,input_size,hidden_layers,activation,lr,wd,dropout,batch_size):
         super().__init__()
@@ -48,6 +67,18 @@ class MLP(nn.Module):
         return self.model(x).squeeze(-1)
     
 class CNNmodel(nn.Module):
+    """
+    1D Convolutional Neural Network (CNN) for extracting features from sequential inputs.
+
+    Architecture:
+    - Two Conv1d layers with kernel size 3, stride 1, and padding 1 to process temporal features.
+    - Batch normalization and GELU activation after each convolutional layer.
+    - Adaptive average pooling layer to squeeze sequence length dimension to 1.
+    - Dropout layer for regularization.
+    - Fully connected network (FC1 -> GELU -> FC2) mapping features to a single return prediction.
+    - Kaiming normal initialization for convolutional and linear weights.
+    """
+
 
     def __init__(self, input_features, out_channels_l1, out_channels_l2, dropout, lr, wd, fc_dim, batch_size):
         super().__init__()
@@ -105,6 +136,17 @@ class CNNmodel(nn.Module):
 
     
 class LSTMmodel(nn.Module):
+    """
+    Long Short-Term Memory (LSTM) network for capturing sequential temporal dependencies.
+
+    Architecture:
+    - Single-layer LSTM mapping input sequences to hidden dimensions.
+    - Slices the final sequence step's hidden state.
+    - Batch normalization and Dropout applied to the extracted sequence representation.
+    - Fully connected network (FC1 -> GELU -> FC2) mapping output to a single return prediction.
+    - Xavier uniform initialization for LSTM weights and Kaiming normal for linear weights.
+    """
+
 
     def __init__(self, input_features, hidden_size, dropout, fc_dim, lr, wd, batch_size):
         super().__init__()
@@ -149,6 +191,19 @@ class LSTMmodel(nn.Module):
         return x.squeeze(-1)
     
 class CNN_LSTM(nn.Module):
+    """
+    Hybrid CNN-LSTM network combining local feature extraction and temporal modeling.
+
+    Architecture:
+    - 1D Convolutional layer to extract local patterns across feature dimensions,
+      followed by Batch Normalization and a GELU activation.
+    - Single-layer LSTM to model temporal sequence dependencies from the CNN features.
+    - Extracts the final LSTM sequence step, applies Dropout, and passes it through
+      a final linear layer to predict target returns.
+    - Kaiming normal initialization for convolutional and linear weights; orthogonal
+      initialization for LSTM recurrent weights.
+    """
+
 
     def __init__(self, input_features, cnn_out_channels, lstm_hidden_dim, dropout, lr, wd, batch_size):
         super().__init__()
@@ -195,6 +250,20 @@ class CNN_LSTM(nn.Module):
         return x.squeeze(-1)
 
 class MultiHeadAttention(nn.Module):
+    """
+    Multi-Head Attention layer.
+
+    Computes scaled dot-product attention over input sequences by projecting them
+    into Query, Key, and Value spaces across multiple heads.
+
+    Architecture:
+    - Multi-head projections for Q, K, and V.
+    - Computes attention scores with scaling by `sqrt(head_dim)`.
+    - Softmax activation and dropout on attention weights.
+    - Linear projection of concatenated attention output back to original embedding space.
+    - Xavier uniform initialization for all linear projections.
+    """
+
 
     def __init__(self, embed_dim, num_heads, dropout):
         super().__init__()
@@ -235,6 +304,21 @@ class MultiHeadAttention(nn.Module):
         return self.out_projection(context)
     
 class Transformer(nn.Module):
+    """
+    Transformer encoder network for sequential prediction.
+
+    Architecture:
+    - Linear embedding layer mapping input features to the internal embedding dimension.
+    - Learned positional embeddings added to input representations.
+    - Single encoder layer containing:
+        - Multi-head attention block with a residual connection and layer normalization (Norm1).
+        - Feed-forward expansion network (Linear -> GELU -> Dropout -> Linear) with residual
+          connection and layer normalization (Norm2).
+    - Global average pooling across the sequence dimension (mean pooling).
+    - Output linear layer predicting target returns.
+    - Xavier uniform initialization for embedding, projection, and feed-forward weights.
+    """
+
 
     def __init__(self, input_features, embed_dim, num_heads, dropout, fc_dim, lr, wd, batch_size):
         super().__init__()

@@ -1,3 +1,9 @@
+"""
+Module providing a registry and factory for PyTorch deep learning hyperparameter searches.
+Maps neural network model types to their appropriate search wrapper (RollingOptunaSearchPyTorch
+for flat MLP inputs, RollingSeqOptunaSearchPyTorch for sequential 3D inputs) and parameters.
+"""
+
 import optuna
 from src.models.create_nn_models import MODEL_REGISTRY
 from src.models.pytorch_optuna_search import RollingOptunaSearchPyTorch

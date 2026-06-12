@@ -1,3 +1,7 @@
+"""
+Utility module for loading project datasets from disk.
+Contains helper classes and methods to manage local data access.
+"""
 import os
 import pandas as pd
 from pathlib import Path
@@ -6,7 +10,10 @@ import numpy as np
 
 class DataLoad():
     """Utility class for loading project datasets from disk.
-    Supports loading a single ticker file or multiple ticker files by data type."""
+
+    Supports loading raw, clean, processed, and feature CSV files, as well as
+    aggregated model and hyperparameter tuning datasets.
+    """
 
     def __init__(self):
         self._data_path = "/home/jaime/Documents/TFG/data/"

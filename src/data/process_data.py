@@ -1,3 +1,7 @@
+"""
+Data processing module for computing stock indicators.
+Calculates rolling returns, volatilities, moving averages, momentum, and statistical indicators.
+"""
 import os
 import numpy as np
 import pandas as pd
@@ -9,9 +13,10 @@ import pandas_market_calendars as mcal
 
 
 class ProcessData():
-    """Computes technical indicators and price-based features for stock data.
-    Generates returns, volatility, moving averages, RSI, and Hurst exponent metrics.
-    Saves in data/processed.
+    """Computes technical indicators, time-series, and statistical features for stock data.
+
+    Calculates returns, rolling volatilities, moving averages, RSI, Hurst exponents, and
+    various other momentum, liquidity, and volume-based signals on clean datasets.
     """
 
     def __init__(self):

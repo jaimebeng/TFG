@@ -1,3 +1,9 @@
+"""
+Module for feature scaling and outlier handling in cross-sectional datasets.
+Provides transformation utilities like winsorization and z-score standardization
+to process feature and target matrices cross-sectionally on each individual date.
+"""
+
 from sklearn.preprocessing import StandardScaler
 from scipy.stats.mstats import winsorize
 import numpy as np
@@ -5,9 +11,17 @@ import pandas as pd
 
 
 class StockTransformer():
-    """Applies winsorization and standardization to the whole group of stocks.
-    Normalizes each feature across all data to handle outliers and standardize values globally.
     """
+    Applies winsorization and z-score standardization to a cross-section of assets.
+
+    Used date-by-date to scale features and target variables:
+    1. Winsorizes feature values within specified percentile limits (default: 1% lower and upper tails)
+       to limit the impact of extreme statistical outliers.
+    2. Performs standard scaling (z-score normalization) to obtain zero mean and unit variance.
+    3. Applied cross-sectionally (i.e. grouped by date) to normalize values across all active stocks
+       on each individual timestamp, avoiding temporal leakage.
+    """
+
     def __init__(self, winsor_limits=(0.01, 0.01)):
         self.winsor_limits = winsor_limits
 

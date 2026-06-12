@@ -1,3 +1,11 @@
+"""
+Module for calculating portfolio performance metrics, risk ratios, and regression statistics.
+Provides functions for Sharpe and Sortino ratios, drawdown analysis (maximum drawdown,
+drawdown duration, and Ulcer Index), risk-adjusted regressions (Fama-French 5-factor regression with
+HAC standard errors), forecasting accuracy diagnostics (Spearman rank IC, U2 coefficient), and
+various probability estimators used during Monte Carlo bootstrapping.
+"""
+
 import numpy as np
 from scipy.stats.mstats import spearmanr
 import pandas as pd

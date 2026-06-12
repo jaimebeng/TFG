@@ -1,3 +1,9 @@
+"""
+Module for running hyperparameter optimization via Optuna on sequential PyTorch neural networks.
+Implements data transformation pipelines that slice 2D flat features into 3D sequential blocks
+using a 12-month rolling sequence window, enabling sequential model tuning (CNN, LSTM, Transformer).
+"""
+
 import torch
 import torch.nn as nn
 import optuna
@@ -7,6 +13,19 @@ import numpy as np
 from src.models.pytorch_optuna_search import train_model
 
 class RollingSeqOptunaSearchPyTorch():
+    """
+    Hyperparameter search wrapper using Optuna for sequential deep learning models.
+
+    This class handles:
+    1. Mapping 2D flat cross-sectional inputs into 3D temporal sequence tensors with a
+       12-month historical window (lag-11 to present).
+    2. Partitioning sequences chronologically into expanding training windows and corresponding
+       out-of-sample monthly validation targets.
+    3. Tuning sequential architectures (e.g. LSTM, CNN_LSTM, Transformer) via TPESampler and
+       SuccessiveHalvingPruner.
+    4. Slicing predictions and validation losses on GPU/CPU to optimize rank-based IC metrics.
+    5. Refitting the optimal network configuration on the entire sequential dataset history.
+    """
 
     def _make_sequences(self, X, y):
         M = len(X)

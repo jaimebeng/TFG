@@ -1,3 +1,9 @@
+"""
+Module for generating quantitative portfolio performance and risk charts.
+Uses matplotlib to plot cumulative equity curves, historical drawdowns, Monte Carlo
+simulation paths, and tabular metrics summaries, saving results to the 'results/' folder.
+"""
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import pandas as pd
@@ -10,6 +16,21 @@ from matplotlib import colors as mcolors
 plt.style.use("seaborn-v0_8-whitegrid")
 
 class Plotter():
+    """
+    Handles plotting and tabular export of backtest performance and Monte Carlo results.
+
+    Specifically, this class implements:
+    1. `plot_equity_cruve`: Plots cumulative growth, color-coding daily returns as green
+       (positive) or red (negative), alongside the S&P 500 baseline index.
+    2. `plot_metrics`: Generates and exports a clean, colored image table summarizing
+       performance and risk ratios, transaction costs, Fama-French exposure betas,
+       and forecasting precision metrics.
+    3. `plot_dd`: Generates drawdown time-series charts with shaded areas.
+    4. `plot_mc_metrics`: Generates a metrics summary table specifically for the Monte Carlo bootstrap trials.
+    5. `plot_mc_histograms`: Plots a grid of histograms for return, Sharpe, drawdown, and duration.
+    6. `plot_mc_paths`: Renders individual bootstrap path trajectories along with the median line.
+    """
+
     def __init__(self):
         self._output_path = "/home/jaime/Documents/TFG/results"
         os.makedirs(self._output_path, exist_ok=True)

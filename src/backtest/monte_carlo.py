@@ -1,3 +1,10 @@
+"""
+Module for running Monte Carlo simulations of backtested portfolio returns.
+Implements a stationary bootstrap algorithm using a geometric block-length distribution
+to generate alternative return histories, preserving short-term time-series dependencies.
+Plots path distributions and calculates out-of-sample risk metrics confidence intervals.
+"""
+
 import os
 import sys
 sys.path.append(os.path.abspath(".."))
@@ -9,6 +16,19 @@ import pandas as pd
 np.random.seed(42)
 
 class MonteCarlo():
+    """
+    Simulates alternative portfolio growth paths using stationary bootstrapping.
+
+    Specifically, this class:
+    1. Executes 10,000 simulated iterations of the backtested asset return series.
+    2. Utilizes Politis and Romano's (1994) stationary bootstrap with a geometric
+       block-length distribution (average length of 21 business days, p = 1/21) to capture
+       serial correlation and volatility clustering.
+    3. Calculates key path-dependent distribution statistics for each simulation run:
+       CAGR, Volatility, Sharpe Ratio, Max Drawdown, Average Drawdown Duration,
+       Ulcer Index, and Conditional Value at Risk (CVaR).
+    4. Triggers visualization functions for histograms, metric distributions, and path bands.
+    """
 
     def __init__(self):
         self._plotter = Plotter()

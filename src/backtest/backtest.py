@@ -1,3 +1,11 @@
+"""
+Module containing the historical backtesting engine for quantitative portfolios.
+Simulates daily portfolio growth and monthly rebalancing across various strategies:
+market benchmarks (S&P 500), Equally-Weighted portfolios, standard Mean-Variance Optimization (MVO),
+and model-driven Black-Litterman portfolios (including classical linear regressors, random forests,
+XGBoost, and PyTorch deep learning architectures). Incorporates transaction costs and slippage.
+"""
+
 from src.data.data_loader import DataLoad
 from src.utils.plotting import Plotter
 from src.models.create_shallow_models import lin_reg
@@ -20,6 +28,24 @@ TRANSACTION_COSTS = 0.0005
 SLIPPAGE = 0.0005
 
 class Backtest():
+    """
+    Coordinates and executes historical backtests of asset allocation strategies.
+
+    This class:
+    1. Loads compiled datasets (model features, historical stock returns, benchmark returns,
+       and risk-free rates).
+    2. Implements `snp500_backtest` as a baseline benchmark.
+    3. Implements `eq_portfolio_backtest` to evaluate a simple equally-weighted asset rebalancing.
+    4. Implements `mvo_portfolio_backtest` to evaluate Markowitz portfolio weights using historical returns.
+    5. Implements `portfolio_backtest` to evaluate shallow machine learning models (Lasso, Ridge,
+       ElasticNet, Random Forest, XGBoost) combined with the Black-Litterman allocation framework.
+    6. Implements `pytorch_portfolio_backtest` to evaluate PyTorch deep learning architectures
+       using a GPU/CPU training loop.
+    7. Computes and deducts transaction costs and slippage (defaulting to 5 bps each, or 10 bps total)
+       on turnover at each monthly rebalancing step.
+    8. Automatically plots equity curves, metrics reports, drawdowns, and spawns Monte Carlo
+       path simulations for each strategy.
+    """
 
     def __init__(self):
         self._dl = DataLoad()

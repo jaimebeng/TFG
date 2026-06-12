@@ -1,3 +1,10 @@
+"""
+Module for downloading raw financial data from web resources and APIs.
+Retrieves daily historical OHLCV data for 30 selected stocks, the S&P 500 index (^GSPC),
+historical market capitalization data via web scraping (companiesmarketcap.com), and the
+Fama-French 5-factor dataset from Ken French's data library.
+"""
+
 import yfinance as yf
 import os
 import re
@@ -13,7 +20,18 @@ import zipfile
 import io
 
 class DownloadData():
-    """Downloads historical stock price data from yfinance and saves it as CSV files."""
+    """
+    Downloads and compiles raw financial data.
+
+    This class handles:
+    1. Fetching historical daily stock prices for a set of 30 corporate tickers from yfinance.
+    2. Downloading the ^GSPC (S&P 500) benchmark index history from yfinance.
+    3. Scraping historical daily market capitalization values from companiesmarketcap.com
+       for scaling and weight calculation (e.g. in capitalization-weighted portfolios).
+    4. Downloading and extracting the Fama-French 5-factor daily research data ZIP archive
+       from Ken French's Dartmouth FTP server.
+    5. Writing all outputs as CSV files to the 'data/raw' directory.
+    """
 
     def __init__(self,):
         self._output_path = "/home/jaime/Documents/TFG/data/raw"

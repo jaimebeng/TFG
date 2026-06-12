@@ -1,4 +1,9 @@
-# imports
+"""
+Module containing base configurations and search grids for baseline shallow regressors.
+Defines parameters and estimators for Linear Regression, Lasso, Ridge, and ElasticNet
+with wider search grids, along with standard Random Forest and XGBoost builders.
+"""
+
 import os
 import sys
 sys.path.append(os.path.abspath(".."))

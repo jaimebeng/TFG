@@ -1,3 +1,9 @@
+"""
+Module for running parameter grid searches using cross-validation over time series.
+Evaluates models using an expanding-window scheme where the training set grows at each
+temporal step, preventing lookahead bias while assessing out-of-sample prediction performance.
+"""
+
 import os
 import sys
 sys.path.append(os.path.abspath(".."))
@@ -9,7 +15,19 @@ import numpy as np
 
 class RollingGridSearch():
     """
-    Rolling-window grid search for time-series / expanding window prediction.
+    Grid search cross-validation wrapper using an expanding-window time-series scheme.
+
+    Instead of randomized k-fold splits, this class evaluates candidate parameters
+    chronologically:
+    1. At each timestep `t`, the training set is composed of all historical observations
+       accumulated up to `t-1` (which expands over time).
+    2. The candidate model is trained on this expanding dataset and tested on the new,
+       unseen observations of timestep `t`.
+    3. Hyperparameter combinations are evaluated in parallel, using the mean Spearman rank
+       correlation coefficient (information coefficient) across all validation windows as
+       the scoring metric.
+    4. The best performing parameter configuration is selected and refitted on the full
+       historical dataset.
     """
 
     def __init__(self, model, param_grid, min_train_size=24, n_jobs=-1, verbose=1):

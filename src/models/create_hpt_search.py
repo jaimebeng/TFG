@@ -1,3 +1,9 @@
+"""
+Module providing a registry and factory for shallow model hyperparameter search configurations.
+Maps Lasso, Ridge, ElasticNet, Random Forest, and XGBoost models to their corresponding search
+mechanisms (RollingGridSearch or RollingOptunaSearch) and defines tuning parameters.
+"""
+
 from src.models.create_shallow_models import MODEL_REGISTRY
 from src.models.rolling_gridsearch import RollingGridSearch
 from src.models.optuna_search import RollingOptunaSearch
