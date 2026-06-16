@@ -1,0 +1,33 @@
+# =============================================================================
+# Dependencies for "On the Limits of Low-Frequency OHLCV Signals in
+# Machine Learning-Driven Portfolio Optimization" (Bengoechea Pardo, 2026).
+#
+# Exact versions from the conda environment used to produce the results
+# (env name: TFG, CPython 3.11.15). For full conda reproduction use
+# environment.yml; this pip list mirrors it.
+#
+# Note: torch was installed as 2.11.0+cu128 (CUDA 12.8 build). On CPU-only
+# machines, `pip install torch==2.11.0` resolves to the CPU build.
+# =============================================================================
+
+# Core math and data
+numpy==2.4.4
+pandas==3.0.2
+scipy==1.17.1
+pandas-market-calendars==5.3.2
+requests==2.33.1
+beautifulsoup4==4.14.3
+fredapi==0.5.2
+yfinance==1.3.0
+
+# Machine learning and optimization
+scikit-learn==1.8.0
+xgboost==3.2.0
+optuna==4.8.0
+torch==2.11.0
+cvxpy==1.8.2
+
+# Statistical analysis and visualisation
+statsmodels==0.14.6
+matplotlib==3.10.8
+joblib==1.5.3

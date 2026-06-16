@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use this software or refer to its findings, please cite the thesis below."
+title: "On the Limits of Low-Frequency OHLCV Signals in Machine Learning-Driven Portfolio Optimization"
+abstract: >-
+  Source code and reproducible empirical framework for a Bachelor's thesis (Trabajo Fin de
+  Grado) that stress-tests whether machine-learning models trained only on monthly features
+  derived from daily OHLCV price-volume data can generate economically meaningful, net-of-cost
+  portfolio improvements over disciplined baselines, on 30 large-cap US equities (2010-2025),
+  using Black-Litterman allocation with Marchenko-Pastur covariance cleaning. The study
+  documents a rigorous negative result: risk-adjusted performance is driven by covariance
+  regularisation and Bayesian shrinkage rather than by the predictive content of the models.
+type: software
+authors:
+  - family-names: "Bengoechea Pardo"
+    given-names: "Jaime"
+    email: "bengoecheapardo.jaime@gmail.com"
+    orcid: "https://orcid.org/0009-0009-4387-5249"
+license: MIT
+repository-code: "https://github.com/jaimebeng/TFG"
+keywords:
+  - quantitative finance
+  - portfolio optimization
+  - machine learning
+  - Black-Litterman
+  - random matrix theory
+  - walk-forward validation
+  - reproducible research
+  - negative result
+version: "1.0.0"
+date-released: "2026-06-01"   # TODO: set to the actual release/tag date
+# doi: "10.5281/zenodo.XXXXXXX"   # TODO: insert the Zenodo concept DOI once minted
+preferred-citation:
+  type: thesis
+  title: "On the Limits of Low-Frequency OHLCV Signals in Machine Learning-Driven Portfolio Optimization"
+  authors:
+    - family-names: "Bengoechea Pardo"
+      given-names: "Jaime"
+  institution:
+    name: "Universidad Politécnica de Madrid, Escuela Técnica Superior de Ingenieros Informáticos"
+  thesis-type: "Trabajo Fin de Grado (Bachelor's Thesis)"
+  year: 2026
+  month: 6
+  notes: "Supervised by Antonio García Dopico (DATSI)."

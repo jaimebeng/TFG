@@ -1,6 +1,6 @@
 
 # ----------------------
-# Personal
+# Personal / private (NEVER publish — career strategy, AI-assist notes, agent config)
 # ----------------------
 path.txt
 structure.txt
@@ -8,6 +8,23 @@ notes.txt
 references.txt
 improvements.txt
 goals_for_project.txt
+skills_goals.md
+CLAUDE.md
+.claude/
+PUBLISHING_CHECKLIST.md
+
+# ----------------------
+# LaTeX build artifacts (preprint in paper/)
+# ----------------------
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.synctex.gz
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.toc
 
 
 # ----------------------
@@ -41,3 +58,20 @@ ENV/
 # Datasets
 # ----------------------
 data/
+paper/
+images/
+
+# ----------------------
+# Large binaries & submission artifacts (publish via Zenodo / GitHub Release, NOT Git)
+# ----------------------
+# Thesis PDF is ~101 MB and exceeds GitHub's 100 MB hard push limit -> Zenodo / Release asset
+JaimeBengoecheaTFG.pdf
+JaimeBengoecheaTFG_Defensa.pdf
+JaimeBengoecheaTFG_text.txt
+# Defense slides & summary sheets (optional; delete these lines if you want them public)
+defensa_tfg.tex
+guion_defensa.md
+ficha_resumen_en.tex
+ficha_resumen_en.pdf
+ficha_resumen_es.tex
+ficha_resumen_es.pdf
