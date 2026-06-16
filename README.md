@@ -3,7 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Academic Status](https://img.shields.io/badge/status-TFG--UPM-orange.svg)](https://www.upm.es/)
-[![DOI](https://img.shields.io/badge/DOI-pending%20Zenodo-lightgrey.svg)](#-citation)
+[![DOI](https://zenodo.org/badge/1161698590.svg)](https://doi.org/10.5281/zenodo.20719912)
 
 This repository contains the complete source code and reproducible empirical framework for the undergraduate thesis (**Trabajo Fin de Grado**) in Computer Science at **Universidad Politécnica de Madrid (UPM)**:
 
@@ -16,7 +16,7 @@ This repository contains the complete source code and reproducible empirical fra
 
 ## 🎯 Key Finding (read this first)
 
-This is a documented negative result, and that honesty is the contribution. On a universe of 30 large-cap US equities (2010 to 2025), machine-learning models trained on monthly features derived from daily OHLCV data **do not** produce economically meaningful, net-of-cost improvements over a no-machine-learning Black–Litterman baseline. The best model (an MLP) reaches Sharpe 0.96, but a passive **Prior-Only** Black–Litterman portfolio, which uses no ML views but the same Marchenko–Pastur covariance cleaning, reaches Sharpe 0.94 at roughly a third of the transaction cost. More strikingly, a naive **equally weighted 1/30 portfolio** reaches Sharpe 0.93, essentially tying the entire optimized apparatus. The driver of risk-adjusted performance is risk management (covariance cleaning plus Bayesian shrinkage), not the predictive signal; the optimized strategies' real edge over 1/30 is in drawdown control (around -25.8% vs -34%), not return. Any absolute "beats the S&P 500" reading must be tempered by the survivorship caveat in [Limitations and Scope](#-limitations--scope).
+This is a documented negative result, and that honesty is the contribution. On a universe of 30 large-cap US equities (2010 to 2025), machine-learning models trained on monthly features derived from daily OHLCV data **do not** produce economically meaningful, net-of-cost improvements over a no-machine-learning Black–Litterman baseline. The best model (an MLP) reaches Sharpe 0.96, but a passive **Prior-Only** Black–Litterman portfolio, which uses no ML views but the same Marchenko–Pastur covariance cleaning, reaches Sharpe 0.94 at roughly a third of the transaction cost. More strikingly, a naive **equally weighted 1/30 portfolio** reaches Sharpe 0.93, essentially tying the entire optimized apparatus. The driver of risk-adjusted performance is risk management (covariance cleaning plus Bayesian shrinkage), not the predictive signal; the optimized strategies' real edge over 1/30 is in drawdown control (around -25.8% vs -34%), not return. Any absolute "beats the S&P 500" reading must be tempered by the survivorship caveat in [Limitations and Scope](#limitations-and-scope).
 
 ---
 
@@ -46,7 +46,7 @@ Here $\Pi$ is the vector of prior equilibrium returns (from reverse optimization
 ### 2. Spearman Rank Information Coefficient (Rank IC)
 The Information Coefficient at month $t$ is the Spearman rank correlation between predicted returns $\hat{R}_{i,t+1}$ and realized returns $R_{i,t+1}$ across the $N$ stocks, computed as the Pearson correlation of their (tie-corrected) ranks:
 
-$$\text{Rank IC}_t = \frac{\operatorname{cov}\!\big(\operatorname{rank}(\hat{R}_{\cdot,t+1}),\ \operatorname{rank}(R_{\cdot,t+1})\big)}{\sigma_{\operatorname{rank}(\hat{R})}\,\sigma_{\operatorname{rank}(R)}}$$
+$$\text{Rank IC}_t = \frac{\text{cov}\left(\text{rank}(\hat{R}_{\cdot,t+1}),\ \text{rank}(R_{\cdot,t+1})\right)}{\sigma_{\text{rank}(\hat{R})}\,\sigma_{\text{rank}(R)}}$$
 
 and the reported value is the time average $\overline{\text{IC}} = \frac{1}{T}\sum_t \text{Rank IC}_t$. In code this is `scipy.stats.spearmanr` for the shallow models and an equivalent differentiable Pearson-on-ranks implementation for the neural networks. A strict filter of $\overline{\text{IC}} \ge 0.05$ on the 2016 validation window is required for model promotion.
 
@@ -94,7 +94,7 @@ Under a transaction-fee model of 10 bps (5 bps commission plus 5 bps slippage):
 
 ---
 
-## ⚠️ Limitations and Scope
+## Limitations and Scope
 
 This is an honest benchmark; its boundaries are stated explicitly so the results are not over-read.
 
@@ -105,7 +105,7 @@ This is an honest benchmark; its boundaries are stated explicitly so the results
 
 ---
 
-## 🔁 Data Availability and Reproducibility
+## Data Availability and Reproducibility
 
 The pipeline is deterministic (global seed `42`), but the input data is not, if re-downloaded: Yahoo Finance adjusted prices are recomputed on every later split or dividend, so fetching the data again will not reproduce the 2010 to 2025 numbers. Exact reproduction therefore requires the frozen data snapshot.
 
@@ -197,11 +197,12 @@ If you use this codebase or refer to the findings, please cite the thesis:
   school       = {Escuela Técnica Superior de Ingenieros Informáticos},
   year         = {2026},
   month        = {June},
-  note         = {Supervised by Antonio García Dopico. Archived at Zenodo, DOI: <to be inserted on release>}
+  doi          = {10.5281/zenodo.20719912},
+  note         = {Supervised by Antonio García Dopico. Archived at Zenodo (concept DOI 10.5281/zenodo.20719912)}
 }
 ```
 
-> **DOI:** A permanent Zenodo DOI will be minted on the first tagged release and inserted here, in the BibTeX `note`, in `CITATION.cff`, and in the DOI badge above.
+> **DOI:** [10.5281/zenodo.20719912](https://doi.org/10.5281/zenodo.20719912) is the concept DOI (always resolves to the latest version). The version-specific DOI for v1.0.0 is `10.5281/zenodo.20719913`.
 
 ---
 
@@ -214,4 +215,4 @@ If you use this codebase or refer to the findings, please cite the thesis:
 
 ## 📄 License
 
-The source code in this repository is licensed under the MIT License, see [LICENSE](LICENSE). The bundled data is not covered by this licence (see [Data Availability](#-data-availability--reproducibility) and [`DATASET.md`](DATASET.md)).
+The source code in this repository is licensed under the MIT License, see [LICENSE](LICENSE). The bundled data is not covered by this licence (see [Data Availability](#data-availability-and-reproducibility) and [`DATASET.md`](DATASET.md)).
