@@ -3,7 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Academic Status](https://img.shields.io/badge/status-TFG--UPM-orange.svg)](https://www.upm.es/)
-[![DOI](https://zenodo.org/badge/1161698590.svg)](https://doi.org/10.5281/zenodo.20719912)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20719912-blue.svg)](https://doi.org/10.5281/zenodo.20719912)
 
 This repository contains the complete source code and reproducible empirical framework for the undergraduate thesis (**Trabajo Fin de Grado**) in Computer Science at **Universidad Politécnica de Madrid (UPM)**:
 
