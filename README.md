@@ -12,9 +12,6 @@ This repository contains the complete source code and reproducible empirical fra
 > **Tutor:** Antonio García Dopico (DATSI)  
 > **Date:** June 2026  
 
-> [!NOTE]
-> The code in `src/` and `main.py`, the notebooks, and the thesis PDF are the artifacts as submitted for examination, preserved unchanged. This repository wraps them with the materials needed to make the work publicly citable and reproducible (pinned dependencies, a frozen data snapshot, citation metadata). It does not modify the submitted research.
-
 ---
 
 ## 🎯 Key Finding (read this first)
