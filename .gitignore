@@ -1,5 +1,5 @@
 # ----------------------
-# Python bytecode
+# Python
 # ----------------------
 __pycache__/
 *.py[cod]
@@ -12,7 +12,12 @@ __pycache__/
 venv/
 env/
 ENV/
+
+# ----------------------
+# Editors
+# ----------------------
 .vscode/
+.idea/
 
 # ----------------------
 # Environment variables
@@ -21,11 +26,39 @@ ENV/
 .env.*
 
 # ----------------------
-# macOS
+# OS
 # ----------------------
 .DS_Store
+Thumbs.db
 
 # ----------------------
 # Datasets
+# The frozen ~400 MB snapshot is published on the Zenodo record, not in Git.
+# See DATASET.md.
 # ----------------------
 data/
+*.zip
+
+# ----------------------
+# Large binaries
+# The thesis and its figures live on the Zenodo record. GitHub rejects files
+# over 100 MB, so PDFs are excluded by default; the preprint is the exception.
+# ----------------------
+*.pdf
+!paper/main.pdf
+
+# ----------------------
+# LaTeX build artifacts (paper/ sources are committed; these are not)
+# ----------------------
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb

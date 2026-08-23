@@ -27,8 +27,8 @@ keywords:
   - reproducible research
   - negative result
 version: "1.0.0"
-date-released: "2026-06-01"   # TODO: set to the actual release/tag date
-# doi: "10.5281/zenodo.XXXXXXX"   # TODO: insert the Zenodo concept DOI once minted
+date-released: "2026-06-16"
+doi: "10.5281/zenodo.20719912"
 preferred-citation:
   type: thesis
   title: "On the Limits of Low-Frequency OHLCV Signals in Machine Learning-Driven Portfolio Optimization"

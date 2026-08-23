@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Academic Status](https://img.shields.io/badge/status-TFG--UPM-orange.svg)](https://www.upm.es/)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20719912-blue.svg)](https://doi.org/10.5281/zenodo.20719912)
+[![Preprint](https://img.shields.io/badge/preprint-SSRN-8A2BE2.svg)](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6952859)
 
 This repository contains the complete source code and reproducible empirical framework for the undergraduate thesis (**Trabajo Fin de Grado**) in Computer Science at **Universidad Politécnica de Madrid (UPM)**:
 
@@ -208,8 +209,14 @@ If you use this codebase or refer to the findings, please cite the thesis:
 
 ## 🔗 Related outputs
 
-- **Thesis (full, 156 pp):** archived on Zenodo and deposited in the UPM institutional repository (links to be added on release).
-- **Preprint:** a condensed paper derived from the thesis lives in [`paper/`](paper/) (arXiv link to be added on submission).
+| Output | Where |
+| :--- | :--- |
+| **Code** (this repository) | [github.com/jaimebeng/TFG](https://github.com/jaimebeng/TFG) |
+| **Archive and DOI** (code, data, thesis, preprint) | [10.5281/zenodo.20719912](https://doi.org/10.5281/zenodo.20719912) |
+| **Preprint** (condensed, 10 pp) | [SSRN abstract 6952859](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6952859) · source in [`paper/`](paper/) · PDF [`paper/main.pdf`](paper/main.pdf) |
+| **Thesis** (full, 156 pp) | On the Zenodo record above |
+| **Frozen data snapshot** (~400 MB) | On the Zenodo record above. See [`DATASET.md`](DATASET.md) |
+| **UPM institutional repository** | To be deposited |
 
 ---
 
